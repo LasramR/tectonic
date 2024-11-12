@@ -1,0 +1,10 @@
+# Compilation artifacts
+bin/
+tectonic
+
+# Code editor
+.vscode/
+
+# Logs
+*.log
+*.logs
