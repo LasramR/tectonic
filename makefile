@@ -1,4 +1,4 @@
-CFLAGS=-std=c++20 -O2
+CFLAGS=-std=c++20 -O2 -I.
 LDFLAGS=-lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
 
 OUT_NAME = tectonic

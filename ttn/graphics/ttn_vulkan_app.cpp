@@ -2,9 +2,16 @@
 
 #include <stdexcept>
 #include <format>
+#include<functional>
+#include <map>
+#include <cstring>
 #include <GLFW/glfw3.h>
 
-Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Logger& logger) : vkApplicationInfo{}, vkInstanceCreateInfo{}, vkInstance{}, logger{logger} {
+const std::vector<const char*> Ttn::VulkanApp::vkValidationLayers = {
+  "VK_LAYER_KHRONOS_validation"
+};
+
+Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Logger& logger) : vkApplicationInfo{}, vkInstanceCreateInfo{}, vkInstance{} ,logger{logger} {
   this->vkApplicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
   this->vkApplicationInfo.pApplicationName = name.c_str();
   this->vkApplicationInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
@@ -12,13 +19,30 @@ Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Logger& logger) : vkApplication
   this->vkApplicationInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
   this->vkApplicationInfo.apiVersion = VK_API_VERSION_1_3;
 
-  this->glfwExtensions = glfwGetRequiredInstanceExtensions(&this->glfwExtensionCount);
+  auto glfwRawExtensions = glfwGetRequiredInstanceExtensions(&this->glfwExtensionCount);
+  std::vector<const char*> glfwExtensions(glfwRawExtensions, glfwRawExtensions + this->glfwExtensionCount);
+  this->glfwExtensions = glfwExtensions;
 
   this->vkInstanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
   this->vkInstanceCreateInfo.pApplicationInfo = &this->vkApplicationInfo;
+
+  if (this->vkEnableValidationLayers) {
+    this->logger.Info("Enabling Vulkan validation layers");
+    if (!this->checkValidationLayerSupport()) {
+      throw std::runtime_error("validation layers requested but not available");
+    }
+    this->vkInstanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(this->vkValidationLayers.size());
+    this->vkInstanceCreateInfo.ppEnabledLayerNames = this->vkValidationLayers.data();
+    this->glfwExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+    this->glfwExtensionCount = static_cast<uint32_t>(this->glfwExtensions.size());
+    this->logger.Info("loading vk debugger");
+    this->vkDebugger = new Ttn::debug::Vulkan_Debugger(this->vkApplicationInfo, this->logger);
+  } else {
+    this->vkInstanceCreateInfo.enabledLayerCount = 0;
+  }
+
   this->vkInstanceCreateInfo.enabledExtensionCount = this->glfwExtensionCount;
-  this->vkInstanceCreateInfo.ppEnabledExtensionNames = this->glfwExtensions;
-  this->vkInstanceCreateInfo.enabledLayerCount = 0;
+  this->vkInstanceCreateInfo.ppEnabledExtensionNames = this->glfwExtensions.data();
 
   vkEnumerateInstanceExtensionProperties(nullptr, &this->vkExtensionCount, nullptr);
   this->vkExtensions.resize(this->vkExtensionCount);
@@ -39,7 +63,12 @@ Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Logger& logger) : vkApplication
   for (const auto& extension : this->vkExtensions) {
       this->logger.Info(extension.extensionName);
   }
+
+  if (this->vkEnableValidationLayers) {
+    this->vkDebugger->createDebuggerMessenger(this->vkInstance);
+  }
 }
+
 Ttn::VulkanApp::~VulkanApp() {
   vkDestroyInstance(this->vkInstance, nullptr);
 }
@@ -55,6 +84,10 @@ void Ttn::VulkanApp::initialize(Ttn::Ttn_WindowProperties windowProperties) {
 }
 
 void Ttn::VulkanApp::cleanUp() {
+  if (this->vkDebugger != nullptr) {
+    delete this->vkDebugger;
+  }
+  
   delete this->window;
   glfwTerminate();
 }
@@ -63,4 +96,28 @@ void Ttn::VulkanApp::run() {
   while(!this->window->ShouldClose()) {
       glfwPollEvents();
   }
+}
+
+bool Ttn::VulkanApp::checkValidationLayerSupport() {
+  vkEnumerateInstanceLayerProperties(&this->vkAvailableValidationLayerCount, nullptr);
+  
+  this->vkAvailableValidationLayerProperties.resize(this->vkAvailableValidationLayerCount);
+  vkEnumerateInstanceLayerProperties(&this->vkAvailableValidationLayerCount, this->vkAvailableValidationLayerProperties.data());
+
+  for (const auto layerName : this->vkValidationLayers) {
+    bool layerFound = false;
+
+    for (const auto& layerProperty : this->vkAvailableValidationLayerProperties) {
+      if (strcmp(layerName, layerProperty.layerName) == 0) {
+        layerFound = true;
+        break;
+      }
+    }
+
+    if (!layerFound) {
+      return false;
+    }
+  }
+
+  return true;
 }

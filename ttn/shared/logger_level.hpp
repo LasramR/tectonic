@@ -2,11 +2,19 @@
 
 #include <string>
 
-enum LogLevel : u_int8_t {
-  INFO,
-  WARN,
-  ERROR,
-  FATAL
-};
+namespace Ttn {
 
-const std::string LogLevelStr[] = {"INFO", "WARNING", "ERROR", "FATAL"};
+  namespace shared {
+  
+    enum LogLevel : u_int8_t {
+      INFO,
+      WARN,
+      ERROR,
+      DEBUG,
+      FATAL
+    };
+
+    const std::string LogLevelStr[] = {"INFO", "WARNING", "ERROR", "DEBUG", "FATAL"};
+
+  }
+}
