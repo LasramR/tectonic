@@ -69,6 +69,9 @@ Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Logger& logger) : vkApplication
   if (this->vkEnableValidationLayers) {
     this->vkDebugger->createDebugMessenger(this->vkInstance);
   }
+
+  this->logger.Info("Selecting physical device");
+  this->ttnPhysicalDevice = new Ttn::devices::Ttn_Physical_Device(this->vkInstance, this->logger);
 }
 
 Ttn::VulkanApp::~VulkanApp() {
@@ -86,6 +89,8 @@ void Ttn::VulkanApp::initialize(Ttn::Ttn_WindowProperties windowProperties) {
 }
 
 void Ttn::VulkanApp::cleanUp() {
+  delete this->ttnPhysicalDevice;
+  
   if (this->vkDebugger != nullptr) {
     delete this->vkDebugger;
   }

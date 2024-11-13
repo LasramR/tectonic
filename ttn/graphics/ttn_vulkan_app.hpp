@@ -4,9 +4,10 @@
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
+#include <ttn/debug/ttn_vulkan_debugger.hpp>
+#include <ttn/devices/ttn_physical_device.hpp>
 #include <ttn/graphics/ttn_window.hpp>
 #include <ttn/shared/logger.hpp>
-#include <ttn/debug/ttn_vulkan_debugger.hpp>
 
 #include <string>
 #include <vector>
@@ -44,6 +45,7 @@ namespace Ttn {
     bool checkValidationLayerSupport();
 
     Ttn::debug::Vulkan_Debugger* vkDebugger;
+    Ttn::devices::Ttn_Physical_Device* ttnPhysicalDevice;
 
     public:
       VulkanApp(std::string name, Ttn::Logger& logger);
