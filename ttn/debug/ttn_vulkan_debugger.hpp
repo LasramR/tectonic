@@ -33,10 +33,10 @@ namespace Ttn {
     class Vulkan_Debugger {
       
       private:
-        VkApplicationInfo& vkApplicationInfo;
+        VkInstanceCreateInfo* vkInstanceCreateInfo;
         Ttn::Logger& logger;
 
-        VkDebugUtilsMessengerCreateInfoEXT* vkInstanceDebugUtilsMessengerCreateInfo;
+        VkDebugUtilsMessengerCreateInfoEXT vkInstanceDebugUtilsMessengerCreateInfo;
         void initializeDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT* createInfo);
         static VKAPI_ATTR VkBool32 VKAPI_CALL vkDebuggerMessengerCallback(
           VkDebugUtilsMessageSeverityFlagBitsEXT,
@@ -48,9 +48,9 @@ namespace Ttn {
 
 
       public:
-        Vulkan_Debugger(VkApplicationInfo&, Ttn::Logger&);
+        Vulkan_Debugger(VkInstanceCreateInfo*, Ttn::Logger&);
         ~Vulkan_Debugger();
-        VkDebugUtilsMessengerEXT* createDebuggerMessenger(VkInstance vkInstance);
+        VkDebugUtilsMessengerEXT* createDebugMessenger(VkInstance vkInstance);
     };
   };
 }

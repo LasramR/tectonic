@@ -36,27 +36,24 @@ Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Logger& logger) : vkApplication
     this->glfwExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     this->glfwExtensionCount = static_cast<uint32_t>(this->glfwExtensions.size());
     this->logger.Info("loading vk debugger");
-    this->vkDebugger = new Ttn::debug::Vulkan_Debugger(this->vkApplicationInfo, this->logger);
+    this->vkDebugger = new Ttn::debug::Vulkan_Debugger(&this->vkInstanceCreateInfo, this->logger);
   } else {
     this->vkInstanceCreateInfo.enabledLayerCount = 0;
+    this->vkInstanceCreateInfo.pNext = nullptr;
   }
 
   this->vkInstanceCreateInfo.enabledExtensionCount = this->glfwExtensionCount;
   this->vkInstanceCreateInfo.ppEnabledExtensionNames = this->glfwExtensions.data();
 
-  vkEnumerateInstanceExtensionProperties(nullptr, &this->vkExtensionCount, nullptr);
-  this->vkExtensions.resize(this->vkExtensionCount);
-  vkEnumerateInstanceExtensionProperties(nullptr, &this->vkExtensionCount, this->vkExtensions.data());
-
-  if (vkCreateInstance(&this->vkInstanceCreateInfo, nullptr, &this->vkInstance) != VK_SUCCESS) {
-    throw std::runtime_error("could not create vulkan instance");
-  }
-  
   this->logger.Info(std::format("required GLFW extensions: {}", this->glfwExtensionCount));
 
   for (int i; i < this->glfwExtensionCount; i++) {
     this->logger.Info(this->glfwExtensions[i]);
   }
+  
+  vkEnumerateInstanceExtensionProperties(nullptr, &this->vkExtensionCount, nullptr);
+  this->vkExtensions.resize(this->vkExtensionCount);
+  vkEnumerateInstanceExtensionProperties(nullptr, &this->vkExtensionCount, this->vkExtensions.data());
 
   this->logger.Info(std::format("available Vulkan extensions: {}", this->vkExtensionCount));
 
@@ -64,8 +61,13 @@ Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Logger& logger) : vkApplication
       this->logger.Info(extension.extensionName);
   }
 
+  this->logger.Info("Initializing Vulkan instance");
+  if (vkCreateInstance(&this->vkInstanceCreateInfo, nullptr, &this->vkInstance) != VK_SUCCESS) {
+    throw std::runtime_error("could not create vulkan instance");
+  }
+
   if (this->vkEnableValidationLayers) {
-    this->vkDebugger->createDebuggerMessenger(this->vkInstance);
+    //this->vkDebugger->createDebugMessenger(this->vkInstance);
   }
 }
 

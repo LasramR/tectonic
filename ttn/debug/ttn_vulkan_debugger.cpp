@@ -3,10 +3,9 @@
 #include <format>
 #include <stdexcept>
 
-Ttn::debug::Vulkan_Debugger::Vulkan_Debugger(VkApplicationInfo& vkApplicationInfo, Ttn::Logger& logger) : vkApplicationInfo{vkApplicationInfo}, logger{logger} {
-  this->vkInstanceDebugUtilsMessengerCreateInfo = new VkDebugUtilsMessengerCreateInfoEXT{};
-  this->initializeDebugMessengerCreateInfo(this->vkInstanceDebugUtilsMessengerCreateInfo);
-  this->vkApplicationInfo.pNext = this->vkInstanceDebugUtilsMessengerCreateInfo;
+Ttn::debug::Vulkan_Debugger::Vulkan_Debugger(VkInstanceCreateInfo* vkInstanceCreateInfo, Ttn::Logger& logger) : vkInstanceCreateInfo{vkInstanceCreateInfo}, logger{logger}, vkInstanceDebugUtilsMessengerCreateInfo{} {
+  this->initializeDebugMessengerCreateInfo(&this->vkInstanceDebugUtilsMessengerCreateInfo);
+  this->vkInstanceCreateInfo->pNext = (VkDebugUtilsMessengerCreateInfoEXT*) &this->vkInstanceDebugUtilsMessengerCreateInfo;
 }
 
 Ttn::debug::Vulkan_Debugger::~Vulkan_Debugger() {
@@ -17,7 +16,6 @@ Ttn::debug::Vulkan_Debugger::~Vulkan_Debugger() {
       delete debugger.vkDebugUtilsMessengerEXT;
     }
   }
-  delete this->vkInstanceDebugUtilsMessengerCreateInfo;
 }
 
 void Ttn::debug::Vulkan_Debugger::initializeDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT* createInfo) {
@@ -34,28 +32,28 @@ VKAPI_ATTR VkBool32 VKAPI_CALL Ttn::debug::Vulkan_Debugger::vkDebuggerMessengerC
   const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
   void* pUserData
 ) {
-  static_cast<Ttn::debug::Vulkan_Debugger*>(pUserData)->logger.Debug(
-    Ttn::debug::VK_DEBUG_SEVERITY_MAP.at(messageSeverity),
-    std::format("Validation layer: {}", pCallbackData->pMessage)
-  );
 
-  if (messageSeverity == VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT) {
-    exit(EXIT_FAILURE);
+  if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT) {
+    static_cast<Ttn::debug::Vulkan_Debugger*>(pUserData)->logger.Debug(
+      Ttn::debug::VK_DEBUG_SEVERITY_MAP.at(messageSeverity),
+      std::format("Validation layer: {}", pCallbackData->pMessage)
+    );
   }
   
   return VK_FALSE;
 };
 
-VkDebugUtilsMessengerEXT* Ttn::debug::Vulkan_Debugger::createDebuggerMessenger(VkInstance vkInstance) {
-  auto createDebugMessenger = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(vkInstance, "vkCreateDebugUtilsMessengerEXT");
-  if (createDebugMessenger == nullptr) {
+VkDebugUtilsMessengerEXT* Ttn::debug::Vulkan_Debugger::createDebugMessenger(VkInstance vkInstance) {
+  auto createMessenger = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(vkInstance, "vkCreateDebugUtilsMessengerEXT");
+  if (createMessenger == nullptr) {
     throw std::runtime_error("could not load extension vkCreateDebugUtilsMessengerEXT");
   }
   
   VkDebugUtilsMessengerCreateInfoEXT debugMessengerCreateInfo {};
+  this->initializeDebugMessengerCreateInfo(&debugMessengerCreateInfo);
+  
   auto debugMessenger = new VkDebugUtilsMessengerEXT{};
-
-  if (createDebugMessenger(vkInstance, &debugMessengerCreateInfo, nullptr, debugMessenger) != VK_SUCCESS) {
+  if (createMessenger(vkInstance, &debugMessengerCreateInfo, nullptr, debugMessenger) != VK_SUCCESS) {
     throw new std::runtime_error("could not create debugger messenger");
   }
   
