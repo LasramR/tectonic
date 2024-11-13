@@ -67,7 +67,7 @@ Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Logger& logger) : vkApplication
   }
 
   if (this->vkEnableValidationLayers) {
-    //this->vkDebugger->createDebugMessenger(this->vkInstance);
+    this->vkDebugger->createDebugMessenger(this->vkInstance);
   }
 }
 
