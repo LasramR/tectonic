@@ -3,6 +3,10 @@
 #include <format>
 #include <stdexcept>
 
+bool Ttn::devices::QueueFamilyIndices::isComplete() {
+  return this->graphicsFamily.has_value();
+}
+
 Ttn::devices::Ttn_Physical_Device::Ttn_Physical_Device(VkInstance vkInstance, Ttn::Logger& logger) : vkInstance{vkInstance}, logger{logger}, vkPhysicalDevice{VK_NULL_HANDLE}, physicalDeviceScore{0} {
   vkEnumeratePhysicalDevices(this->vkInstance, &this->deviceCount, nullptr);
 
@@ -33,9 +37,13 @@ Ttn::devices::Ttn_Physical_Device::Ttn_Physical_Device(VkInstance vkInstance, Tt
     throw std::runtime_error("no GPU with Vulkan support");
   }
 
-  this->logger.Info(std::format("selected GPU {} ({})", this->vkPhysicalDeviceProperties.deviceID, this->vkPhysicalDeviceProperties.deviceName));
+  this->queueFamily = this->findQueueFamily(this->vkPhysicalDevice, this->vkPhysicalDeviceProperties);
 
+  if (!this->queueFamily.isComplete()) {
+    throw std::runtime_error("no queueFamily supported with available GPU");
+  }
 
+  this->logger.Info(std::format("selected GPU {} ({}), queueFamily {}", this->vkPhysicalDeviceProperties.deviceID, this->vkPhysicalDeviceProperties.deviceName, this->queueFamily.graphicsFamily.value()));
 }
 
 Ttn::devices::Ttn_Physical_Device::~Ttn_Physical_Device() {}
@@ -53,5 +61,39 @@ uint32_t Ttn::devices::Ttn_Physical_Device::getPhysicalDeviceScore(VkPhysicalDev
     return 0; // Application will not work without a geometry shader
   }
 
+  if (! this->findQueueFamily(vkPhysicalDevice, vkPhysicalDeviceProperties).isComplete()) {
+    return 0;
+  }
+
   return deviceScore;
+}
+
+Ttn::devices::QueueFamilyIndices Ttn::devices::Ttn_Physical_Device::findQueueFamily(VkPhysicalDevice vkPhysicalDevice, VkPhysicalDeviceProperties vkPhysicalDeviceProperties) {
+  QueueFamilyIndices queueFamilyIndices;
+  uint32_t queueFamilyCount;
+
+  vkGetPhysicalDeviceQueueFamilyProperties(vkPhysicalDevice, &queueFamilyCount, nullptr);
+  std::vector<VkQueueFamilyProperties> queueFamilyProperties(queueFamilyCount); 
+  vkGetPhysicalDeviceQueueFamilyProperties(vkPhysicalDevice, &queueFamilyCount, queueFamilyProperties.data());
+  
+  int i = 0;
+  for (const auto& queueFamilyProperty : queueFamilyProperties) {
+    if (queueFamilyProperty.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
+      queueFamilyIndices.graphicsFamily = i;
+    }
+
+    if (queueFamilyIndices.isComplete()) {
+      break;
+    }
+    i++;
+  }
+
+  return queueFamilyIndices;
+}
+
+Ttn::devices::QueueFamilyIndices Ttn::devices::Ttn_Physical_Device::getQueueFamilyIndices() {
+  return this->queueFamily;
+}
+VkPhysicalDevice Ttn::devices::Ttn_Physical_Device::GetVkPhysicalDevice() {
+  return this->vkPhysicalDevice;
 }

@@ -72,6 +72,10 @@ Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Logger& logger) : vkApplication
 
   this->logger.Info("Selecting physical device");
   this->ttnPhysicalDevice = new Ttn::devices::Ttn_Physical_Device(this->vkInstance, this->logger);
+
+  this->logger.Info("Creating logical device");
+  this->ttnLogicalDevice = new Ttn::devices::Ttn_Logical_Device(this->vkInstance, this->ttnPhysicalDevice, &this->logger, this->vkValidationLayers);
+
 }
 
 Ttn::VulkanApp::~VulkanApp() {
@@ -89,6 +93,7 @@ void Ttn::VulkanApp::initialize(Ttn::Ttn_WindowProperties windowProperties) {
 }
 
 void Ttn::VulkanApp::cleanUp() {
+  delete this->ttnLogicalDevice;
   delete this->ttnPhysicalDevice;
   
   if (this->vkDebugger != nullptr) {
