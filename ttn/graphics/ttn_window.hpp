@@ -32,6 +32,8 @@ namespace Ttn {
     Ttn_Window(VkInstance, std::string, Ttn_WindowProperties);
     ~Ttn_Window();
 
+    VkSurfaceKHR getSurface();
+    GLFWwindow* getWindow();
     bool ShouldClose();
   };
 

@@ -8,7 +8,7 @@
 #include <GLFW/glfw3.h>
 
 const std::vector<const char*> Ttn::VulkanApp::vkRequiredExtensions = {
-    // "VK_KHR_xlib_surface"
+    // "VK_KHR_xlib_surface",
 };
 
 const std::vector<const char*> Ttn::VulkanApp::vkValidationLayers = {
@@ -95,6 +95,7 @@ Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProp
   }
 
   if (this->vkEnableValidationLayers) {
+    this->logger.Info("Enabling Vulkan debugger");
     this->vkDebugger->createDebugMessenger(this->vkInstance);
   }
 
@@ -102,11 +103,18 @@ Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProp
   this->window = new Ttn::Ttn_Window(this->vkInstance, this->vkApplicationInfo.pApplicationName, windowProperties);
 
   this->logger.Info("Selecting physical device");
-  this->ttnPhysicalDevice = new Ttn::devices::Ttn_Physical_Device(this->vkInstance, this->logger);
+  this->ttnPhysicalDevice = new Ttn::devices::Ttn_Physical_Device(this->vkInstance, this->window->getSurface(), this->logger);
 
   this->logger.Info("Creating logical device");
   this->ttnLogicalDevice = new Ttn::devices::Ttn_Logical_Device(this->vkInstance, this->ttnPhysicalDevice, &this->logger, this->vkValidationLayers);
 
+  this->logger.Info("Creating swap chain");
+  this->ttnSwapChain = new Ttn::swapchain::Ttn_SwapChain(
+    this->ttnLogicalDevice->getDevice(),
+    this->ttnPhysicalDevice->getSwapChainSupportDetails(),
+    this->ttnPhysicalDevice->getQueueFamilyIndices(),
+    this->window
+  );
 }
 
 Ttn::VulkanApp::~VulkanApp() {
@@ -116,6 +124,7 @@ Ttn::VulkanApp::~VulkanApp() {
 void Ttn::VulkanApp::initialize() {}
 
 void Ttn::VulkanApp::cleanUp() {
+  delete this->ttnSwapChain;
   delete this->ttnLogicalDevice;
   delete this->ttnPhysicalDevice;
   

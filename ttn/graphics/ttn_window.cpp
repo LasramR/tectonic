@@ -34,6 +34,14 @@ Ttn::Ttn_Window::~Ttn_Window() {
   glfwDestroyWindow(this->window);
 }
 
+VkSurfaceKHR Ttn::Ttn_Window::getSurface() {
+  return this->vkSurface;
+}
+
+GLFWwindow* Ttn::Ttn_Window::getWindow() {
+  return this->window;
+}
+
 bool Ttn::Ttn_Window::ShouldClose() {
   return glfwWindowShouldClose(this->window);
 }

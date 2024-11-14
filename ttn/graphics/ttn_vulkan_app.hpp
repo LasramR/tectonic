@@ -9,6 +9,7 @@
 #include <ttn/devices/ttn_logical_device.hpp>
 #include <ttn/graphics/ttn_window.hpp>
 #include <ttn/shared/logger.hpp>
+#include <ttn/swapchain/ttn_swapchain.hpp>
 
 #include <string>
 #include <vector>
@@ -52,6 +53,7 @@ namespace Ttn {
     Ttn::debug::Vulkan_Debugger* vkDebugger;
     Ttn::devices::Ttn_Physical_Device* ttnPhysicalDevice;
     Ttn::devices::Ttn_Logical_Device* ttnLogicalDevice;
+    Ttn::swapchain::Ttn_SwapChain* ttnSwapChain;
 
     public:
       VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProperties, Ttn::Logger& logger);
