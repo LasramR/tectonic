@@ -8,7 +8,7 @@
 #include <GLFW/glfw3.h>
 
 const std::vector<const char*> Ttn::VulkanApp::vkRequiredExtensions = {
-    "VK_KHR_xlib_surface"
+    // "VK_KHR_xlib_surface"
 };
 
 const std::vector<const char*> Ttn::VulkanApp::vkValidationLayers = {

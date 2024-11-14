@@ -15,18 +15,22 @@ Ttn::Ttn_Window::Ttn_Window(VkInstance vkInstance, std::string name, Ttn_WindowP
     throw std::runtime_error("could not open window");
   }
 
-  this->vkSurfaceCreateInfo.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
-  this->vkSurfaceCreateInfo.dpy = glfwGetX11Display();
-  this->vkSurfaceCreateInfo.window = glfwGetX11Window(this->window);
-  this->vkSurfaceCreateInfo.flags = 0;
-  this->vkSurfaceCreateInfo.pNext = nullptr;
+  //this->vkSurfaceCreateInfo.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
+  //this->vkSurfaceCreateInfo.dpy = glfwGetX11Display();
+  //this->vkSurfaceCreateInfo.window = glfwGetX11Window(this->window);
+  //this->vkSurfaceCreateInfo.flags = 0;
+  //this->vkSurfaceCreateInfo.pNext = nullptr;
 
-  if (vkCreateXlibSurfaceKHR(this->vkInstance, &this->vkSurfaceCreateInfo, nullptr, &this->vkSurface) != VK_SUCCESS) {
-    throw std::runtime_error("failed to create window surface");
+  //if (vkCreateXlibSurfaceKHR(this->vkInstance, &this->vkSurfaceCreateInfo, nullptr, &this->vkSurface) != VK_SUCCESS) {
+  //  throw std::runtime_error("failed to create window surface");
+  //}
+
+  if (glfwCreateWindowSurface(this->vkInstance, this->window, nullptr, &this->vkSurface) != VK_SUCCESS) {
+      throw std::runtime_error("failed to create window surface!");
   }
-
 }
 Ttn::Ttn_Window::~Ttn_Window() {
+  vkDestroySurfaceKHR(this->vkInstance, this->vkSurface, nullptr);
   glfwDestroyWindow(this->window);
 }
 
