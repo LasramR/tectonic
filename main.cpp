@@ -11,8 +11,8 @@ int main() {
   Ttn::Logger logger(&std::cout, Ttn::Logger::WithDatetime);
 
   try {
-    Ttn::VulkanApp vulkanApp("Hello Tectonic", logger);
-    vulkanApp.initialize({800, 600, true});
+    Ttn::VulkanApp vulkanApp("Hello Tectonic", {800, 600, true}, logger);
+    vulkanApp.initialize();
     logger.flush();
     vulkanApp.run();
     vulkanApp.cleanUp();

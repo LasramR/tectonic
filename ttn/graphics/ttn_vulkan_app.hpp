@@ -28,7 +28,11 @@ namespace Ttn {
     std::vector<const char*> glfwExtensions;
 
     uint32_t vkExtensionCount;
-    std::vector<VkExtensionProperties> vkExtensions;
+    std::vector<VkExtensionProperties> vkExtensions; 
+    static const std::vector<const char*> vkRequiredExtensions;
+
+    uint32_t enabledExtensionsCount;
+    std::vector<const char*> enabledExtensions;
 
     static const std::vector<const char*> vkValidationLayers;
 
@@ -50,9 +54,9 @@ namespace Ttn {
     Ttn::devices::Ttn_Logical_Device* ttnLogicalDevice;
 
     public:
-      VulkanApp(std::string name, Ttn::Logger& logger);
+      VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProperties, Ttn::Logger& logger);
       ~VulkanApp();
-      void initialize(Ttn::Ttn_WindowProperties windowProperties);
+      void initialize();
       void run();
       void cleanUp();
   };
