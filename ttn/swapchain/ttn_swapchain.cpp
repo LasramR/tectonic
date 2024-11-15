@@ -106,3 +106,11 @@ VkExtent2D Ttn::swapchain::Ttn_SwapChain::selectSwapExtent(const VkSurfaceCapabi
 
   return actualExtent;
 }
+
+std::vector<VkImage>* Ttn::swapchain::Ttn_SwapChain::getImageBuffer() {
+  return &this->imageBuffer;
+}
+
+VkFormat Ttn::swapchain::Ttn_SwapChain::getSwapChainFormat() {
+  return this->swapChainFormat;
+}

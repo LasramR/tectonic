@@ -115,6 +115,9 @@ Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProp
     this->ttnPhysicalDevice->getQueueFamilyIndices(),
     this->window
   );
+  
+  this->logger.Info("Creating image views");
+  this->ttnImageView = new Ttn::swapchain::Ttn_Image_View(this->ttnLogicalDevice->getDevice(), this->ttnSwapChain);
 }
 
 Ttn::VulkanApp::~VulkanApp() {
@@ -124,6 +127,7 @@ Ttn::VulkanApp::~VulkanApp() {
 void Ttn::VulkanApp::initialize() {}
 
 void Ttn::VulkanApp::cleanUp() {
+  delete this->ttnImageView;
   delete this->ttnSwapChain;
   delete this->ttnLogicalDevice;
   delete this->ttnPhysicalDevice;

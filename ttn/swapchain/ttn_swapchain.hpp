@@ -36,6 +36,8 @@ namespace Ttn {
         Ttn_SwapChain(VkDevice, const Ttn::devices::SwapChainSupportDetails&, const Ttn::devices::QueueFamilyIndices&, Ttn::Ttn_Window* ttnWindow);
         ~Ttn_SwapChain();
 
+        std::vector<VkImage>* getImageBuffer();
+        VkFormat getSwapChainFormat();
     };
 
   };
