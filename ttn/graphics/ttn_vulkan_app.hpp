@@ -11,6 +11,8 @@
 #include <ttn/shared/logger.hpp>
 #include <ttn/swapchain/ttn_swapchain.hpp>
 #include <ttn/swapchain/ttn_image_view.hpp>
+#include <ttn/pipelines/ttn_graphic_pipeline.hpp>
+#include <ttn/pipelines/ttn_renderpass.hpp>
 
 #include <string>
 #include <vector>
@@ -56,6 +58,8 @@ namespace Ttn {
     Ttn::devices::Ttn_Logical_Device* ttnLogicalDevice;
     Ttn::swapchain::Ttn_SwapChain* ttnSwapChain;
     Ttn::swapchain::Ttn_Image_View* ttnImageView;
+    Ttn::pipelines::Ttn_Graphic_Pipeline* ttnGraphicPipeline;
+    Ttn::pipelines::Ttn_Renderpass* ttnRenderpass;
 
     public:
       VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProperties, Ttn::Logger& logger);

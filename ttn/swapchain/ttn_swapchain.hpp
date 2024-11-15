@@ -38,6 +38,7 @@ namespace Ttn {
 
         std::vector<VkImage>* getImageBuffer();
         VkFormat getSwapChainFormat();
+        VkExtent2D getSwapChainExtent();
     };
 
   };

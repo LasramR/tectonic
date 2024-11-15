@@ -8,3 +8,6 @@ tectonic
 # Logs
 *.log
 *.logs
+
+# SPIR-V shader bytecode
+*.spv

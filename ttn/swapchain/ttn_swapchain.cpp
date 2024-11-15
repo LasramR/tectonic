@@ -114,3 +114,7 @@ std::vector<VkImage>* Ttn::swapchain::Ttn_SwapChain::getImageBuffer() {
 VkFormat Ttn::swapchain::Ttn_SwapChain::getSwapChainFormat() {
   return this->swapChainFormat;
 }
+
+VkExtent2D Ttn::swapchain::Ttn_SwapChain::getSwapChainExtent() {
+  return this->swapExtent;
+}
