@@ -29,6 +29,7 @@ namespace Ttn {
         Ttn_Graphic_Pipeline(VkDevice, Ttn::Logger&, Ttn::swapchain::Ttn_SwapChain&, Ttn::pipelines::Ttn_Renderpass&);
         ~Ttn_Graphic_Pipeline();
 
+        VkPipeline getPipeline();
     };
 
   };

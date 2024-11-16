@@ -45,3 +45,7 @@ GLFWwindow* Ttn::Ttn_Window::getWindow() {
 bool Ttn::Ttn_Window::ShouldClose() {
   return glfwWindowShouldClose(this->window);
 }
+
+void Ttn::Ttn_Window::drawFrame() {
+  
+}

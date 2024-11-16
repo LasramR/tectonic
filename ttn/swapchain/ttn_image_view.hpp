@@ -21,6 +21,7 @@ namespace Ttn {
         Ttn_Image_View(VkDevice, Ttn_SwapChain*);
         ~Ttn_Image_View();
 
+        std::vector<VkImageView>& getImageViews();
     };
 
   }

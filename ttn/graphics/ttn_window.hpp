@@ -35,6 +35,7 @@ namespace Ttn {
     VkSurfaceKHR getSurface();
     GLFWwindow* getWindow();
     bool ShouldClose();
+    void drawFrame();
   };
 
 }

@@ -151,3 +151,7 @@ Ttn::pipelines::Ttn_Graphic_Pipeline::~Ttn_Graphic_Pipeline() {
   vkDestroyPipeline(this->vkDevice, this->pipeline, nullptr);
   vkDestroyPipelineLayout(this->vkDevice, this->pipelineLayout, nullptr);
 }
+
+VkPipeline Ttn::pipelines::Ttn_Graphic_Pipeline::getPipeline() {
+  return this->pipeline;
+}

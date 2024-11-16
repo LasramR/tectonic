@@ -36,3 +36,7 @@ Ttn::swapchain::Ttn_Image_View::~Ttn_Image_View() {
     vkDestroyImageView(this->vkDevice, imageView, nullptr);
   }
 }
+
+std::vector<VkImageView>& Ttn::swapchain::Ttn_Image_View::getImageViews() {
+  return this->imageViews;
+}

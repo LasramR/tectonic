@@ -124,6 +124,12 @@ Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProp
 
   this->logger.Info("Creating graphic pipeline");
   this->ttnGraphicPipeline = new Ttn::pipelines::Ttn_Graphic_Pipeline(this->ttnLogicalDevice->getDevice(), this->logger, *this->ttnSwapChain, *this->ttnRenderpass);
+
+  this->logger.Info("Creating frame buffers");
+  this->ttnFramebuffer = new Ttn::graphics::Ttn_Framebuffer(this->ttnLogicalDevice->getDevice(), *this->ttnSwapChain, *this->ttnImageView, *this->ttnRenderpass);
+
+  this->logger.Info("Creating command pool and command buffer");
+  this->ttnCommand = new Ttn::commands::Ttn_Command(*this->ttnLogicalDevice, *this->ttnPhysicalDevice, *this->ttnFramebuffer, *this->ttnRenderpass, *this->ttnSwapChain, *this->ttnGraphicPipeline);
 }
 
 Ttn::VulkanApp::~VulkanApp() {
@@ -133,6 +139,8 @@ Ttn::VulkanApp::~VulkanApp() {
 void Ttn::VulkanApp::initialize() {}
 
 void Ttn::VulkanApp::cleanUp() {
+  delete this->ttnCommand;
+  delete this->ttnFramebuffer;
   delete this->ttnGraphicPipeline;
   delete this->ttnRenderpass;
   delete this->ttnImageView;

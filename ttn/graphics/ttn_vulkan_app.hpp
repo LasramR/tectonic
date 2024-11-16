@@ -13,6 +13,8 @@
 #include <ttn/swapchain/ttn_image_view.hpp>
 #include <ttn/pipelines/ttn_graphic_pipeline.hpp>
 #include <ttn/pipelines/ttn_renderpass.hpp>
+#include <ttn/graphics/ttn_framebuffer.hpp>
+#include <ttn/commands/ttn_command.hpp>
 
 #include <string>
 #include <vector>
@@ -60,6 +62,8 @@ namespace Ttn {
     Ttn::swapchain::Ttn_Image_View* ttnImageView;
     Ttn::pipelines::Ttn_Graphic_Pipeline* ttnGraphicPipeline;
     Ttn::pipelines::Ttn_Renderpass* ttnRenderpass;
+    Ttn::graphics::Ttn_Framebuffer* ttnFramebuffer;
+    Ttn::commands::Ttn_Command* ttnCommand;
 
     public:
       VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProperties, Ttn::Logger& logger);
