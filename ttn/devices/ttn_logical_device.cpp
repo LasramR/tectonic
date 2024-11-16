@@ -59,3 +59,11 @@ Ttn::devices::Ttn_Logical_Device::~Ttn_Logical_Device() {
 VkDevice Ttn::devices::Ttn_Logical_Device::getDevice() {
   return this->vkDevice;
 }
+
+VkQueue Ttn::devices::Ttn_Logical_Device::getGraphicsQueue() {
+  return this->graphicsQueue;
+}
+
+VkQueue Ttn::devices::Ttn_Logical_Device::getPresentQueue() {
+  return this->presentQueue;
+}

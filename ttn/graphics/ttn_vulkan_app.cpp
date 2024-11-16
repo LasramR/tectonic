@@ -130,6 +130,9 @@ Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProp
 
   this->logger.Info("Creating command pool and command buffer");
   this->ttnCommand = new Ttn::commands::Ttn_Command(*this->ttnLogicalDevice, *this->ttnPhysicalDevice, *this->ttnFramebuffer, *this->ttnRenderpass, *this->ttnSwapChain, *this->ttnGraphicPipeline);
+
+  this->logger.Info("Creating sync objects");
+  this->ttnSyncObjects = new Ttn::sync::Ttn_Sync_Objects(this->ttnLogicalDevice->getDevice());
 }
 
 Ttn::VulkanApp::~VulkanApp() {
@@ -139,6 +142,7 @@ Ttn::VulkanApp::~VulkanApp() {
 void Ttn::VulkanApp::initialize() {}
 
 void Ttn::VulkanApp::cleanUp() {
+  delete this->ttnSyncObjects;
   delete this->ttnCommand;
   delete this->ttnFramebuffer;
   delete this->ttnGraphicPipeline;
@@ -159,7 +163,22 @@ void Ttn::VulkanApp::cleanUp() {
 void Ttn::VulkanApp::run() {
   while(!this->window->ShouldClose()) {
       glfwPollEvents();
+      this->drawFrame();
   }
+  vkDeviceWaitIdle(this->ttnLogicalDevice->getDevice());
+}
+
+void Ttn::VulkanApp::drawFrame() {
+  auto device = this->ttnLogicalDevice->getDevice();
+  vkWaitForFences(device, 1, &this->ttnSyncObjects->inFlightFence, VK_TRUE, UINT64_MAX);
+  vkResetFences(device, 1, &this->ttnSyncObjects->inFlightFence);
+
+  uint32_t nextImageIndex;
+  vkAcquireNextImageKHR(device, this->ttnSwapChain->getSwapChain(), UINT64_MAX, this->ttnSyncObjects->imageAvailableSemaphore, VK_NULL_HANDLE, &nextImageIndex);
+  
+  this->ttnCommand->resetCommandBuffer();
+  this->ttnCommand->recordCommandBuffer(nextImageIndex);
+  this->ttnCommand->submitCommandBuffer(nextImageIndex, this->ttnSyncObjects->imageAvailableSemaphore, this->ttnSyncObjects->renderFinishedSemaphore, this->ttnSyncObjects->inFlightFence);
 }
 
 bool Ttn::VulkanApp::checkValidationLayerSupport() {

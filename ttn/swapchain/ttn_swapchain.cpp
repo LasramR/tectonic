@@ -118,3 +118,7 @@ VkFormat Ttn::swapchain::Ttn_SwapChain::getSwapChainFormat() {
 VkExtent2D Ttn::swapchain::Ttn_SwapChain::getSwapChainExtent() {
   return this->swapExtent;
 }
+
+VkSwapchainKHR Ttn::swapchain::Ttn_SwapChain::getSwapChain() {
+  return this->swapChain;
+}

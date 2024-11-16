@@ -27,7 +27,7 @@ namespace Ttn {
       // VkXlibSurfaceCreateInfoKHR vkSurfaceCreateInfo;
       VkSurfaceKHR vkSurface;
       GLFWwindow* window;
-
+      
     public:
     Ttn_Window(VkInstance, std::string, Ttn_WindowProperties);
     ~Ttn_Window();
@@ -35,7 +35,6 @@ namespace Ttn {
     VkSurfaceKHR getSurface();
     GLFWwindow* getWindow();
     bool ShouldClose();
-    void drawFrame();
   };
 
 }

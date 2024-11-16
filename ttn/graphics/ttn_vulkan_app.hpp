@@ -15,6 +15,7 @@
 #include <ttn/pipelines/ttn_renderpass.hpp>
 #include <ttn/graphics/ttn_framebuffer.hpp>
 #include <ttn/commands/ttn_command.hpp>
+#include <ttn/sync/ttn_sync_objects.hpp>
 
 #include <string>
 #include <vector>
@@ -64,6 +65,7 @@ namespace Ttn {
     Ttn::pipelines::Ttn_Renderpass* ttnRenderpass;
     Ttn::graphics::Ttn_Framebuffer* ttnFramebuffer;
     Ttn::commands::Ttn_Command* ttnCommand;
+    Ttn::sync::Ttn_Sync_Objects* ttnSyncObjects;
 
     public:
       VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProperties, Ttn::Logger& logger);
@@ -71,6 +73,7 @@ namespace Ttn {
       void initialize();
       void run();
       void cleanUp();
+      void drawFrame();
   };
 
 }

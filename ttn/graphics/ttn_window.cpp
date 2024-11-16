@@ -10,7 +10,7 @@ Ttn::Ttn_Window::Ttn_Window(VkInstance vkInstance, std::string name, Ttn_WindowP
 {
   glfwWindowHint(GLFW_RESIZABLE, this->windowProperties.resizable ? GLFW_TRUE : GLFW_FALSE);
   this->window = glfwCreateWindow(this->windowProperties.width, this->windowProperties.height, this->name.c_str(), nullptr, nullptr);
-
+  
   if (this->window == NULL) {
     throw std::runtime_error("could not open window");
   }
@@ -28,6 +28,7 @@ Ttn::Ttn_Window::Ttn_Window(VkInstance vkInstance, std::string name, Ttn_WindowP
   if (glfwCreateWindowSurface(this->vkInstance, this->window, nullptr, &this->vkSurface) != VK_SUCCESS) {
       throw std::runtime_error("failed to create window surface!");
   }
+
 }
 Ttn::Ttn_Window::~Ttn_Window() {
   vkDestroySurfaceKHR(this->vkInstance, this->vkSurface, nullptr);
@@ -44,8 +45,4 @@ GLFWwindow* Ttn::Ttn_Window::getWindow() {
 
 bool Ttn::Ttn_Window::ShouldClose() {
   return glfwWindowShouldClose(this->window);
-}
-
-void Ttn::Ttn_Window::drawFrame() {
-  
 }

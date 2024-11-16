@@ -80,3 +80,38 @@ void Ttn::commands::Ttn_Command::recordCommandBuffer(uint32_t imageIndex) {
     throw std::runtime_error("failed to record command buffer");
   }
 }
+
+void Ttn::commands::Ttn_Command::resetCommandBuffer() {
+  vkResetCommandBuffer(this->commandBuffer, 0);
+}
+
+void Ttn::commands::Ttn_Command::submitCommandBuffer(uint32_t imageIndex, VkSemaphore waitSemaphore, VkSemaphore finishedSemaphore, VkFence safeBufferUseFence) {
+  VkSubmitInfo submitInfo {};
+  submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+
+  VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
+  submitInfo.waitSemaphoreCount = 1;
+  submitInfo.pWaitSemaphores = &waitSemaphore;
+  submitInfo.pWaitDstStageMask = waitStages;
+  submitInfo.commandBufferCount = 1;
+  submitInfo.pCommandBuffers = &commandBuffer;
+  submitInfo.signalSemaphoreCount = 1;
+  submitInfo.pSignalSemaphores = &finishedSemaphore;
+
+  if (vkQueueSubmit(this->ttnLogicalDevice.getGraphicsQueue(), 1, &submitInfo, safeBufferUseFence) != VK_SUCCESS) {
+    throw std::runtime_error("failed submitting draw command to command buffer");
+  }
+
+  VkPresentInfoKHR presentInfo {};
+  presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+  presentInfo.waitSemaphoreCount = 1;
+  presentInfo.pWaitSemaphores = &finishedSemaphore;
+
+  VkSwapchainKHR swapChains[] = { this->ttnSwapChain.getSwapChain() };
+  presentInfo.swapchainCount = 1;
+  presentInfo.pSwapchains = swapChains;
+  presentInfo.pImageIndices = &imageIndex;
+  presentInfo.pResults = nullptr;
+
+  vkQueuePresentKHR(this->ttnLogicalDevice.getPresentQueue(), &presentInfo);
+}

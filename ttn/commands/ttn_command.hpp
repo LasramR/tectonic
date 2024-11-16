@@ -31,6 +31,8 @@ namespace Ttn {
         ~Ttn_Command();
 
         void recordCommandBuffer(uint32_t imageIndex);
+        void resetCommandBuffer();
+        void submitCommandBuffer(uint32_t, VkSemaphore, VkSemaphore, VkFence);
     };
 
   };

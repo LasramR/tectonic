@@ -32,6 +32,8 @@ namespace Ttn {
         ~Ttn_Logical_Device();
 
         VkDevice getDevice();
+        VkQueue getGraphicsQueue();
+        VkQueue getPresentQueue();
     };
   };
 }
