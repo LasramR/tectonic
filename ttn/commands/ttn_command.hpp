@@ -24,15 +24,16 @@ namespace Ttn {
         Ttn::pipelines::Ttn_Graphic_Pipeline& ttnGraphicPipeline;
         
         VkCommandPool commandPool;
-        VkCommandBuffer commandBuffer;
-
+        const int commandBuffersCount;
+        std::vector<VkCommandBuffer> commandBuffers;
+      
       public:
-        Ttn_Command(Ttn::devices::Ttn_Logical_Device&, Ttn::devices::Ttn_Physical_Device&, Ttn::graphics::Ttn_Framebuffer&, Ttn::pipelines::Ttn_Renderpass&, Ttn::swapchain::Ttn_SwapChain&, Ttn::pipelines::Ttn_Graphic_Pipeline&);
+        Ttn_Command(Ttn::devices::Ttn_Logical_Device&, Ttn::devices::Ttn_Physical_Device&, Ttn::graphics::Ttn_Framebuffer&, Ttn::pipelines::Ttn_Renderpass&, Ttn::swapchain::Ttn_SwapChain&, Ttn::pipelines::Ttn_Graphic_Pipeline&, const int);
         ~Ttn_Command();
 
-        void recordCommandBuffer(uint32_t imageIndex);
-        void resetCommandBuffer();
-        void submitCommandBuffer(uint32_t, VkSemaphore, VkSemaphore, VkFence);
+        void recordCommandBuffer(uint32_t, uint32_t);
+        void resetCommandBuffer(uint32_t);
+        void submitCommandBuffer(uint32_t, uint32_t, VkSemaphore, VkSemaphore, VkFence);
     };
 
   };

@@ -15,7 +15,14 @@ const std::vector<const char*> Ttn::VulkanApp::vkValidationLayers = {
   "VK_LAYER_KHRONOS_validation"
 };
 
-Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProperties, Ttn::Logger& logger) : vkApplicationInfo{}, vkInstanceCreateInfo{}, vkInstance{} ,logger{logger} {
+Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProperties, const int MAX_FRAMES_IN_FLIGHT, Ttn::Logger& logger) : 
+  vkApplicationInfo{}, 
+  vkInstanceCreateInfo{}, 
+  vkInstance{VK_NULL_HANDLE},
+  MAX_FRAMES_IN_FLIGHT{MAX_FRAMES_IN_FLIGHT},
+  currentFrame{0},
+  logger{logger}
+{
   this->logger.Info("Initializing GLFW with Vulkan API");
   if (glfwInit() == GLFW_FALSE) {
     throw std::runtime_error("could not initialize Vulkan");
@@ -129,10 +136,13 @@ Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProp
   this->ttnFramebuffer = new Ttn::graphics::Ttn_Framebuffer(this->ttnLogicalDevice->getDevice(), *this->ttnSwapChain, *this->ttnImageView, *this->ttnRenderpass);
 
   this->logger.Info("Creating command pool and command buffer");
-  this->ttnCommand = new Ttn::commands::Ttn_Command(*this->ttnLogicalDevice, *this->ttnPhysicalDevice, *this->ttnFramebuffer, *this->ttnRenderpass, *this->ttnSwapChain, *this->ttnGraphicPipeline);
+  this->ttnCommand = new Ttn::commands::Ttn_Command(*this->ttnLogicalDevice, *this->ttnPhysicalDevice, *this->ttnFramebuffer, *this->ttnRenderpass, *this->ttnSwapChain, *this->ttnGraphicPipeline, this->MAX_FRAMES_IN_FLIGHT);
 
   this->logger.Info("Creating sync objects");
-  this->ttnSyncObjects = new Ttn::sync::Ttn_Sync_Objects(this->ttnLogicalDevice->getDevice());
+  this->ttnSyncObjects.resize(this->MAX_FRAMES_IN_FLIGHT);
+  for (int i = 0; i < this->MAX_FRAMES_IN_FLIGHT; i++) {
+    this->ttnSyncObjects[i] = new Ttn::sync::Ttn_Sync_Objects(this->ttnLogicalDevice->getDevice());
+  }
 }
 
 Ttn::VulkanApp::~VulkanApp() {
@@ -142,7 +152,9 @@ Ttn::VulkanApp::~VulkanApp() {
 void Ttn::VulkanApp::initialize() {}
 
 void Ttn::VulkanApp::cleanUp() {
-  delete this->ttnSyncObjects;
+  for (const auto& syncObject : this->ttnSyncObjects) {
+    delete syncObject;
+  }
   delete this->ttnCommand;
   delete this->ttnFramebuffer;
   delete this->ttnGraphicPipeline;
@@ -170,15 +182,16 @@ void Ttn::VulkanApp::run() {
 
 void Ttn::VulkanApp::drawFrame() {
   auto device = this->ttnLogicalDevice->getDevice();
-  vkWaitForFences(device, 1, &this->ttnSyncObjects->inFlightFence, VK_TRUE, UINT64_MAX);
-  vkResetFences(device, 1, &this->ttnSyncObjects->inFlightFence);
+  vkWaitForFences(device, 1, &this->ttnSyncObjects[this->currentFrame]->inFlightFence, VK_TRUE, UINT64_MAX);
+  vkResetFences(device, 1, &this->ttnSyncObjects[this->currentFrame]->inFlightFence);
 
   uint32_t nextImageIndex;
-  vkAcquireNextImageKHR(device, this->ttnSwapChain->getSwapChain(), UINT64_MAX, this->ttnSyncObjects->imageAvailableSemaphore, VK_NULL_HANDLE, &nextImageIndex);
+  vkAcquireNextImageKHR(device, this->ttnSwapChain->getSwapChain(), UINT64_MAX, this->ttnSyncObjects[this->currentFrame]->imageAvailableSemaphore, VK_NULL_HANDLE, &nextImageIndex);
   
-  this->ttnCommand->resetCommandBuffer();
-  this->ttnCommand->recordCommandBuffer(nextImageIndex);
-  this->ttnCommand->submitCommandBuffer(nextImageIndex, this->ttnSyncObjects->imageAvailableSemaphore, this->ttnSyncObjects->renderFinishedSemaphore, this->ttnSyncObjects->inFlightFence);
+  this->ttnCommand->resetCommandBuffer(this->currentFrame);
+  this->ttnCommand->recordCommandBuffer(this->currentFrame, nextImageIndex);
+  this->ttnCommand->submitCommandBuffer(this->currentFrame, nextImageIndex, this->ttnSyncObjects[this->currentFrame]->imageAvailableSemaphore, this->ttnSyncObjects[this->currentFrame]->renderFinishedSemaphore, this->ttnSyncObjects[this->currentFrame]->inFlightFence);
+  this->currentFrame = (this->currentFrame + 1) % this->MAX_FRAMES_IN_FLIGHT;
 }
 
 bool Ttn::VulkanApp::checkValidationLayerSupport() {

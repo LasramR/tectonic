@@ -65,10 +65,13 @@ namespace Ttn {
     Ttn::pipelines::Ttn_Renderpass* ttnRenderpass;
     Ttn::graphics::Ttn_Framebuffer* ttnFramebuffer;
     Ttn::commands::Ttn_Command* ttnCommand;
-    Ttn::sync::Ttn_Sync_Objects* ttnSyncObjects;
+    std::vector<Ttn::sync::Ttn_Sync_Objects*> ttnSyncObjects;
+
+    const int MAX_FRAMES_IN_FLIGHT;
+    uint32_t currentFrame;
 
     public:
-      VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProperties, Ttn::Logger& logger);
+      VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProperties, const int MAX_FRAMES_IN_FLIGHT, Ttn::Logger& logger);
       ~VulkanApp();
       void initialize();
       void run();
