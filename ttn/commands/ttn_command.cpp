@@ -2,14 +2,15 @@
 
 #include <stdexcept>
 
-Ttn::commands::Ttn_Command::Ttn_Command(Ttn::devices::Ttn_Logical_Device& ttnLogicalDevice, Ttn::devices::Ttn_Physical_Device& ttnPhysicalDevice, Ttn::graphics::Ttn_Framebuffer& ttnFramebuffer, Ttn::pipelines::Ttn_Renderpass& ttnRenderpass, Ttn::swapchain::Ttn_SwapChain& ttnSwapChain, Ttn::pipelines::Ttn_Graphic_Pipeline& ttnGraphicPipeline, const int commandBuffersCount) :
+Ttn::commands::Ttn_Command::Ttn_Command(Ttn::devices::Ttn_Logical_Device& ttnLogicalDevice, Ttn::devices::Ttn_Physical_Device& ttnPhysicalDevice, Ttn::graphics::Ttn_Framebuffer& ttnFramebuffer, Ttn::pipelines::Ttn_Renderpass& ttnRenderpass, Ttn::swapchain::Ttn_SwapChain& ttnSwapChain, Ttn::pipelines::Ttn_Graphic_Pipeline& ttnGraphicPipeline, const int commandBuffersCount, Ttn::vertex::Ttn_Vertex_Buffer& ttnVertexBuffer) :
   ttnLogicalDevice{ttnLogicalDevice},
   ttnPhysicalDevice{ttnPhysicalDevice},
   ttnFramebuffer{ttnFramebuffer},
   ttnRenderpass{ttnRenderpass},
   ttnSwapChain{ttnSwapChain},
   ttnGraphicPipeline{ttnGraphicPipeline},
-  commandBuffersCount{commandBuffersCount}
+  commandBuffersCount{commandBuffersCount},
+  ttnVertexBuffer{ttnVertexBuffer}
 {
   VkCommandPoolCreateInfo commandPoolCreateInfo {};
   commandPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -62,6 +63,12 @@ void Ttn::commands::Ttn_Command::recordCommandBuffer(uint32_t commandBufferIdx, 
   vkCmdBeginRenderPass(this->commandBuffers[commandBufferIdx], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
   vkCmdBindPipeline(this->commandBuffers[commandBufferIdx], VK_PIPELINE_BIND_POINT_GRAPHICS, this->ttnGraphicPipeline.getPipeline());
   
+  VkBuffer vertexBuffers[] = { this->ttnVertexBuffer.vertexBuffer };
+  VkDeviceSize offsets[] = {0};
+  vkCmdBindVertexBuffers(this->commandBuffers[commandBufferIdx], 0, 1, vertexBuffers, offsets);
+   
+
+
   VkViewport viewport {};
   viewport.x = 0.0f;
   viewport.y = 0.0f;
@@ -75,7 +82,7 @@ void Ttn::commands::Ttn_Command::recordCommandBuffer(uint32_t commandBufferIdx, 
   scissor.offset = {0, 0};
   scissor.extent = this->ttnSwapChain.getSwapChainExtent();
   vkCmdSetScissor(this->commandBuffers[commandBufferIdx], 0, 1, &scissor);
-  vkCmdDraw(this->commandBuffers[commandBufferIdx], 3, 1, 0, 0);
+  vkCmdDraw(this->commandBuffers[commandBufferIdx], this->ttnVertexBuffer.vertexBufferSize, 1, 0, 0);
 
   vkCmdEndRenderPass(this->commandBuffers[commandBufferIdx]);
 

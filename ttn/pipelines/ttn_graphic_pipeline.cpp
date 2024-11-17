@@ -1,6 +1,7 @@
 #include "ttn_graphic_pipeline.hpp"
 
 #include <format>
+#include <ttn/vertex/ttn_vertex.hpp>
 
 Ttn::pipelines::Ttn_Graphic_Pipeline::Ttn_Graphic_Pipeline(VkDevice vkDevice, Ttn::Logger& logger, Ttn::swapchain::Ttn_SwapChain& ttnSwapChain, Ttn::pipelines::Ttn_Renderpass& ttnRenderpass) :
   vkDevice{vkDevice},
@@ -26,12 +27,16 @@ Ttn::pipelines::Ttn_Graphic_Pipeline::Ttn_Graphic_Pipeline(VkDevice vkDevice, Tt
 
   VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageCreateInfo, fragShaderStageCreateInfo};
   
+  auto ttnVertex = Ttn::vertex::TtnVertex::Default();
+  auto bindingDescription = ttnVertex.getBindingDescription();
+  auto attributeDescriptions = ttnVertex.getAttributeDescriptions();
+
   VkPipelineVertexInputStateCreateInfo vertexInputStateCreateInfo{};
   vertexInputStateCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-  vertexInputStateCreateInfo.vertexBindingDescriptionCount = 0;
-  vertexInputStateCreateInfo.pVertexBindingDescriptions = nullptr;
-  vertexInputStateCreateInfo.vertexAttributeDescriptionCount = 0;
-  vertexInputStateCreateInfo.pVertexAttributeDescriptions = nullptr;
+  vertexInputStateCreateInfo.vertexBindingDescriptionCount = 1;
+  vertexInputStateCreateInfo.pVertexBindingDescriptions = &bindingDescription;
+  vertexInputStateCreateInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDescriptions.size());
+  vertexInputStateCreateInfo.pVertexAttributeDescriptions = attributeDescriptions.data();
 
   this->dynamicStates = {
     VK_DYNAMIC_STATE_VIEWPORT,

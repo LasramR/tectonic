@@ -16,6 +16,7 @@
 #include <ttn/graphics/ttn_framebuffer.hpp>
 #include <ttn/commands/ttn_command.hpp>
 #include <ttn/sync/ttn_sync_objects.hpp>
+#include <ttn/vertex/ttn_vertex_buffer.hpp>
 
 #include <string>
 #include <vector>
@@ -70,6 +71,8 @@ namespace Ttn {
     const int MAX_FRAMES_IN_FLIGHT;
     uint32_t currentFrame;
     bool frameBufferResized = false;
+
+    Ttn::vertex::Ttn_Vertex_Buffer* ttnVertexBuffer;
 
     public:
       VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProperties, const int MAX_FRAMES_IN_FLIGHT, Ttn::Logger& logger);

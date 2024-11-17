@@ -6,6 +6,7 @@
 #include <ttn/pipelines/ttn_renderpass.hpp>
 #include <ttn/swapchain/ttn_swapchain.hpp>
 #include <ttn/pipelines/ttn_graphic_pipeline.hpp>
+#include <ttn/vertex/ttn_vertex_buffer.hpp>
 
 #include <vulkan/vulkan.h>
 
@@ -22,13 +23,14 @@ namespace Ttn {
         Ttn::pipelines::Ttn_Renderpass& ttnRenderpass;
         Ttn::swapchain::Ttn_SwapChain& ttnSwapChain;
         Ttn::pipelines::Ttn_Graphic_Pipeline& ttnGraphicPipeline;
-        
+        Ttn::vertex::Ttn_Vertex_Buffer& ttnVertexBuffer;
+
         VkCommandPool commandPool;
         const int commandBuffersCount;
         std::vector<VkCommandBuffer> commandBuffers;
       
       public:
-        Ttn_Command(Ttn::devices::Ttn_Logical_Device&, Ttn::devices::Ttn_Physical_Device&, Ttn::graphics::Ttn_Framebuffer&, Ttn::pipelines::Ttn_Renderpass&, Ttn::swapchain::Ttn_SwapChain&, Ttn::pipelines::Ttn_Graphic_Pipeline&, const int);
+        Ttn_Command(Ttn::devices::Ttn_Logical_Device&, Ttn::devices::Ttn_Physical_Device&, Ttn::graphics::Ttn_Framebuffer&, Ttn::pipelines::Ttn_Renderpass&, Ttn::swapchain::Ttn_SwapChain&, Ttn::pipelines::Ttn_Graphic_Pipeline&, const int, Ttn::vertex::Ttn_Vertex_Buffer&);
         ~Ttn_Command();
 
         void recordCommandBuffer(uint32_t, uint32_t);
