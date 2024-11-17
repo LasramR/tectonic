@@ -107,7 +107,7 @@ Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProp
   }
 
   this->logger.Info("Creating window and display surface");
-  this->window = new Ttn::Ttn_Window(this->vkInstance, this->vkApplicationInfo.pApplicationName, windowProperties);
+  this->window = new Ttn::Ttn_Window(this->vkInstance, this->vkApplicationInfo.pApplicationName, windowProperties, this->logger);
 
   this->logger.Info("Selecting physical device");
   this->ttnPhysicalDevice = new Ttn::devices::Ttn_Physical_Device(this->vkInstance, this->window->getSurface(), this->logger);
@@ -185,12 +185,30 @@ void Ttn::VulkanApp::drawFrame() {
   vkWaitForFences(device, 1, &this->ttnSyncObjects[this->currentFrame]->inFlightFence, VK_TRUE, UINT64_MAX);
   vkResetFences(device, 1, &this->ttnSyncObjects[this->currentFrame]->inFlightFence);
 
+  bool recreateSwapChainBecauseSuboptimal = false;
   uint32_t nextImageIndex;
-  vkAcquireNextImageKHR(device, this->ttnSwapChain->getSwapChain(), UINT64_MAX, this->ttnSyncObjects[this->currentFrame]->imageAvailableSemaphore, VK_NULL_HANDLE, &nextImageIndex);
-  
+  VkResult acquireNextImageResult = vkAcquireNextImageKHR(device, this->ttnSwapChain->getSwapChain(), UINT64_MAX, this->ttnSyncObjects[this->currentFrame]->imageAvailableSemaphore, VK_NULL_HANDLE, &nextImageIndex);
+  if (acquireNextImageResult == VK_ERROR_OUT_OF_DATE_KHR) {
+    this->recreateSwapChain();
+    return;
+  } else if (acquireNextImageResult == VK_SUBOPTIMAL_KHR) {
+    recreateSwapChainBecauseSuboptimal = true;
+  } else if (acquireNextImageResult != VK_SUCCESS) {
+    throw std::runtime_error("failed to acquire swap chain image");
+  }
+  vkResetFences(device, 1, &this->ttnSyncObjects[currentFrame]->inFlightFence);
+
   this->ttnCommand->resetCommandBuffer(this->currentFrame);
   this->ttnCommand->recordCommandBuffer(this->currentFrame, nextImageIndex);
-  this->ttnCommand->submitCommandBuffer(this->currentFrame, nextImageIndex, this->ttnSyncObjects[this->currentFrame]->imageAvailableSemaphore, this->ttnSyncObjects[this->currentFrame]->renderFinishedSemaphore, this->ttnSyncObjects[this->currentFrame]->inFlightFence);
+  
+  VkResult presentQueueResult = this->ttnCommand->submitCommandBuffer(this->currentFrame, nextImageIndex, this->ttnSyncObjects[this->currentFrame]->imageAvailableSemaphore, this->ttnSyncObjects[this->currentFrame]->renderFinishedSemaphore, this->ttnSyncObjects[this->currentFrame]->inFlightFence);
+  if (presentQueueResult == VK_ERROR_OUT_OF_DATE_KHR || presentQueueResult == VK_SUBOPTIMAL_KHR || this->frameBufferResized || recreateSwapChainBecauseSuboptimal) {
+    this->frameBufferResized = false;
+    this->recreateSwapChain();
+  } else if (presentQueueResult != VK_SUCCESS) {
+    throw std::runtime_error("failed to present swap chain image");
+  }
+  
   this->currentFrame = (this->currentFrame + 1) % this->MAX_FRAMES_IN_FLIGHT;
 }
 
@@ -216,4 +234,33 @@ bool Ttn::VulkanApp::checkValidationLayerSupport() {
   }
 
   return true;
+}
+
+void Ttn::VulkanApp::recreateSwapChain() {
+  // Minimized window handler
+  // /!\ doesnt work on linux as minimized window keep their original width and height ()
+  // Consider using glfwSetWindowIconifyCallback
+
+  int width = 0, height = 0;
+  glfwGetFramebufferSize(this->window->getWindow(), &width, &height);
+  while (width == 0 || height == 0) {
+    this->logger.Info("Window minimized, stop drawing");
+    glfwGetFramebufferSize(this->window->getWindow(), &width, &height);
+    glfwWaitEvents();
+  }
+  this->logger.Info("Recreating swap chain");
+  vkDeviceWaitIdle(this->ttnLogicalDevice->getDevice());
+  delete this->ttnCommand;
+  delete this->ttnFramebuffer;
+  delete this->ttnImageView;
+  delete this->ttnSwapChain;
+  this->ttnSwapChain = new Ttn::swapchain::Ttn_SwapChain(
+    this->ttnLogicalDevice->getDevice(),
+    this->ttnPhysicalDevice->getSwapChainSupportDetails(),
+    this->ttnPhysicalDevice->getQueueFamilyIndices(),
+    this->window
+  );
+  this->ttnImageView = new Ttn::swapchain::Ttn_Image_View(this->ttnLogicalDevice->getDevice(), this->ttnSwapChain);
+  this->ttnFramebuffer = new Ttn::graphics::Ttn_Framebuffer(this->ttnLogicalDevice->getDevice(), *this->ttnSwapChain, *this->ttnImageView, *this->ttnRenderpass);
+  this->ttnCommand = new Ttn::commands::Ttn_Command(*this->ttnLogicalDevice, *this->ttnPhysicalDevice, *this->ttnFramebuffer, *this->ttnRenderpass, *this->ttnSwapChain, *this->ttnGraphicPipeline, this->MAX_FRAMES_IN_FLIGHT);
 }

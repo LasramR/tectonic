@@ -33,7 +33,7 @@ namespace Ttn {
 
         void recordCommandBuffer(uint32_t, uint32_t);
         void resetCommandBuffer(uint32_t);
-        void submitCommandBuffer(uint32_t, uint32_t, VkSemaphore, VkSemaphore, VkFence);
+        VkResult submitCommandBuffer(uint32_t, uint32_t, VkSemaphore, VkSemaphore, VkFence);
     };
 
   };

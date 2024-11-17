@@ -69,6 +69,7 @@ namespace Ttn {
 
     const int MAX_FRAMES_IN_FLIGHT;
     uint32_t currentFrame;
+    bool frameBufferResized = false;
 
     public:
       VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProperties, const int MAX_FRAMES_IN_FLIGHT, Ttn::Logger& logger);
@@ -77,6 +78,7 @@ namespace Ttn {
       void run();
       void cleanUp();
       void drawFrame();
+      void recreateSwapChain();
   };
 
 }

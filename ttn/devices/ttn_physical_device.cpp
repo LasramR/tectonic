@@ -166,6 +166,7 @@ VkPhysicalDevice Ttn::devices::Ttn_Physical_Device::GetVkPhysicalDevice() {
 }
 
 Ttn::devices::SwapChainSupportDetails Ttn::devices::Ttn_Physical_Device::getSwapChainSupportDetails() {
+  vkGetPhysicalDeviceSurfaceCapabilitiesKHR(vkPhysicalDevice, this->vkSurface, &swapChainSupportDetails.capabilities);
   return this->swapChainSupportDetails;
 }
 

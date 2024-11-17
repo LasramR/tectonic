@@ -88,7 +88,7 @@ void Ttn::commands::Ttn_Command::resetCommandBuffer(uint32_t commandBufferIdx) {
   vkResetCommandBuffer(this->commandBuffers[commandBufferIdx], 0);
 }
 
-void Ttn::commands::Ttn_Command::submitCommandBuffer(uint32_t commandBufferIdx, uint32_t imageIndex, VkSemaphore waitSemaphore, VkSemaphore finishedSemaphore, VkFence safeBufferUseFence) {
+VkResult Ttn::commands::Ttn_Command::submitCommandBuffer(uint32_t commandBufferIdx, uint32_t imageIndex, VkSemaphore waitSemaphore, VkSemaphore finishedSemaphore, VkFence safeBufferUseFence) {
   VkSubmitInfo submitInfo {};
   submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 
@@ -116,5 +116,5 @@ void Ttn::commands::Ttn_Command::submitCommandBuffer(uint32_t commandBufferIdx, 
   presentInfo.pImageIndices = &imageIndex;
   presentInfo.pResults = nullptr;
 
-  vkQueuePresentKHR(this->ttnLogicalDevice.getPresentQueue(), &presentInfo);
+  return vkQueuePresentKHR(this->ttnLogicalDevice.getPresentQueue(), &presentInfo);
 }
