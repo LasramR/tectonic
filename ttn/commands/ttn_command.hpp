@@ -33,9 +33,11 @@ namespace Ttn {
         Ttn_Command(Ttn::devices::Ttn_Logical_Device&, Ttn::devices::Ttn_Physical_Device&, Ttn::graphics::Ttn_Framebuffer&, Ttn::pipelines::Ttn_Renderpass&, Ttn::swapchain::Ttn_SwapChain&, Ttn::pipelines::Ttn_Graphic_Pipeline&, const int, Ttn::vertex::Ttn_Vertex_Buffer&);
         ~Ttn_Command();
 
+        void copyBuffer(VkBuffer src, VkBuffer dst, VkDeviceSize size);
         void recordCommandBuffer(uint32_t, uint32_t);
         void resetCommandBuffer(uint32_t);
         VkResult submitCommandBuffer(uint32_t, uint32_t, VkSemaphore, VkSemaphore, VkFence);
+        
     };
 
   };

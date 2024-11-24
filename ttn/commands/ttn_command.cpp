@@ -39,6 +39,40 @@ Ttn::commands::Ttn_Command::~Ttn_Command() {
   vkDestroyCommandPool(this->ttnLogicalDevice.getDevice(), this->commandPool, nullptr);
 }
 
+void Ttn::commands::Ttn_Command::copyBuffer(VkBuffer src, VkBuffer dst, VkDeviceSize size) {
+  VkCommandBufferAllocateInfo allocInfo {};
+  allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+  allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+  allocInfo.commandPool = this->commandPool;
+  allocInfo.commandBufferCount = 1;
+
+  VkCommandBuffer commandBuffer;
+  vkAllocateCommandBuffers(this->ttnLogicalDevice.getDevice(), &allocInfo, &commandBuffer);
+
+  VkCommandBufferBeginInfo beginInfo{};
+  beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+  beginInfo.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+
+  vkBeginCommandBuffer(commandBuffer, &beginInfo);
+  
+  VkBufferCopy copyRegion {};
+  copyRegion.srcOffset = 0;
+  copyRegion.dstOffset = 0;
+  copyRegion.size = size;
+  vkCmdCopyBuffer(commandBuffer, src, dst, 1, &copyRegion);
+  vkEndCommandBuffer(commandBuffer);
+
+  VkSubmitInfo submitInfo{};
+  submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+  submitInfo.commandBufferCount = 1;
+  submitInfo.pCommandBuffers = &commandBuffer;
+
+  vkQueueSubmit(this->ttnLogicalDevice.getGraphicsQueue(), 1, &submitInfo, VK_NULL_HANDLE);
+  vkQueueWaitIdle(this->ttnLogicalDevice.getGraphicsQueue());
+
+  vkFreeCommandBuffers(this->ttnLogicalDevice.getDevice(), this->commandPool, 1, &commandBuffer);
+}
+
 void Ttn::commands::Ttn_Command::recordCommandBuffer(uint32_t commandBufferIdx, uint32_t imageIndex) {
   VkCommandBufferBeginInfo beginInfo {};
   beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -66,8 +100,7 @@ void Ttn::commands::Ttn_Command::recordCommandBuffer(uint32_t commandBufferIdx, 
   VkBuffer vertexBuffers[] = { this->ttnVertexBuffer.vertexBuffer };
   VkDeviceSize offsets[] = {0};
   vkCmdBindVertexBuffers(this->commandBuffers[commandBufferIdx], 0, 1, vertexBuffers, offsets);
-   
-
+  vkCmdBindIndexBuffer(this->commandBuffers[commandBufferIdx], this->ttnVertexBuffer.indexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
   VkViewport viewport {};
   viewport.x = 0.0f;
@@ -82,7 +115,7 @@ void Ttn::commands::Ttn_Command::recordCommandBuffer(uint32_t commandBufferIdx, 
   scissor.offset = {0, 0};
   scissor.extent = this->ttnSwapChain.getSwapChainExtent();
   vkCmdSetScissor(this->commandBuffers[commandBufferIdx], 0, 1, &scissor);
-  vkCmdDraw(this->commandBuffers[commandBufferIdx], this->ttnVertexBuffer.vertexBufferSize, 1, 0, 0);
+  vkCmdDrawIndexed(this->commandBuffers[commandBufferIdx], static_cast<uint32_t>(this->ttnVertexBuffer.ttnVertex.indices.size()), 1, 0, 0, 0);
 
   vkCmdEndRenderPass(this->commandBuffers[commandBufferIdx]);
 

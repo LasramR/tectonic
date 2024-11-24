@@ -152,7 +152,29 @@ Ttn::VulkanApp::~VulkanApp() {
   vkDestroyInstance(this->vkInstance, nullptr);
 }
 
-void Ttn::VulkanApp::initialize() {}
+void Ttn::VulkanApp::initialize() {
+  this->logger.Info("Copying staging buffer to vertex buffer");
+  auto stagingVertex = this->ttnVertexBuffer->createStagingBuffer(
+    this->ttnVertexBuffer->ttnVertex.vertices.data(),
+    this->ttnVertexBuffer->bufferSize
+  );
+  this->ttnCommand->copyBuffer(stagingVertex->vkBuffer, this->ttnVertexBuffer->vertexBuffer, this->ttnVertexBuffer->bufferSize);
+  
+  auto stagingIndex = this->ttnVertexBuffer->createStagingBuffer(
+    this->ttnVertexBuffer->ttnVertex.indices.data(),
+    this->ttnVertexBuffer->indexBufferSize
+  );
+  this->ttnCommand->copyBuffer(stagingIndex->vkBuffer, this->ttnVertexBuffer->indexBuffer, this->ttnVertexBuffer->indexBufferSize);
+
+  
+  vkDestroyBuffer(this->ttnLogicalDevice->getDevice(), stagingVertex->vkBuffer, nullptr);
+  vkFreeMemory(this->ttnLogicalDevice->getDevice(), stagingVertex->vkDeviceMemory, nullptr);
+  free(stagingVertex);
+
+  vkDestroyBuffer(this->ttnLogicalDevice->getDevice(), stagingIndex->vkBuffer, nullptr);
+  vkFreeMemory(this->ttnLogicalDevice->getDevice(), stagingIndex->vkDeviceMemory, nullptr);
+  free(stagingIndex);
+}
 
 void Ttn::VulkanApp::cleanUp() {
   for (const auto& syncObject : this->ttnSyncObjects) {

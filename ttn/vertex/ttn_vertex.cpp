@@ -1,7 +1,8 @@
 #include "ttn_vertex.hpp"
 
-Ttn::vertex::TtnVertex::TtnVertex(std::vector<Ttn::vertex::Vertex> vertices) :
-  vertices{vertices}
+Ttn::vertex::TtnVertex::TtnVertex(std::vector<Ttn::vertex::Vertex> vertices, const std::vector<uint16_t> indices) :
+  vertices{vertices},
+  indices{indices}
 {
 
 }
@@ -12,9 +13,12 @@ Ttn::vertex::TtnVertex::~TtnVertex() {
 
 Ttn::vertex::TtnVertex Ttn::vertex::TtnVertex::Default() {
   return Ttn::vertex::TtnVertex({
-    {{0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}},
-    {{0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}},
-    {{-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}}
+    {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}},
+    {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}},
+    {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}},
+    {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}}
+  }, {
+    0, 1, 2, 2, 3, 0
   });
 }
 

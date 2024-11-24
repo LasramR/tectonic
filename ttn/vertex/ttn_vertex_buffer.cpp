@@ -4,49 +4,26 @@
 #include <optional>
 #include <cstring>
 
+#include <iostream>
+
 Ttn::vertex::Ttn_Vertex_Buffer::Ttn_Vertex_Buffer(VkPhysicalDevice vkPhysicalDevice, VkDevice vkDevice, Ttn::vertex::TtnVertex ttnVertex) :
   vkDevice{vkDevice},
-  vertexBufferSize{static_cast<uint32_t>(ttnVertex.vertices.size())}
+  vkPhysicalDevice{vkPhysicalDevice},
+  ttnVertex{ttnVertex},
+  vertexBuffer{VK_NULL_HANDLE}
 {
-  VkBufferCreateInfo bufferInfo {};
-  bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-  bufferInfo.size = sizeof(Ttn::vertex::Vertex) * ttnVertex.vertices.size();
-  bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-  bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+  this->indexBufferSize = sizeof(this->ttnVertex.indices[0]) * this->ttnVertex.indices.size();
+  this->createBuffer(this->indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, this->indexBuffer, this->indexBufferMemory);
 
-  if (vkCreateBuffer(vkDevice, &bufferInfo, nullptr, &this->vertexBuffer) != VK_SUCCESS) {
-    throw std::runtime_error("could not create vertex buffer");
-  }
-
-  VkMemoryRequirements memRequirements;
-  vkGetBufferMemoryRequirements(vkDevice, this->vertexBuffer, &memRequirements);
-
-  VkPhysicalDeviceMemoryProperties memProperties;
-  vkGetPhysicalDeviceMemoryProperties(vkPhysicalDevice, &memProperties);
-
-  VkMemoryAllocateInfo memAllocInfo {};
-  memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-  memAllocInfo.allocationSize = memRequirements.size;
-  memAllocInfo.memoryTypeIndex = this->findMemoryType(
-    memProperties,
-    memRequirements.memoryTypeBits,
-    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT
-  );
-
-  if (vkAllocateMemory(vkDevice, &memAllocInfo, nullptr, &this->deviceMemory) != VK_SUCCESS) {
-    throw std::runtime_error("could not allocate buffer memory");
-  }
-  vkBindBufferMemory(vkDevice, this->vertexBuffer, this->deviceMemory, 0);
-  
-  void* data;
-  vkMapMemory(this->vkDevice, this->deviceMemory, 0, bufferInfo.size, 0, &data);
-  memcpy(data, ttnVertex.vertices.data(), (size_t) bufferInfo.size);
-  vkUnmapMemory(this->vkDevice, this->deviceMemory);
+  this->bufferSize = sizeof(this->ttnVertex.vertices[0]) * this->ttnVertex.vertices.size();
+  this->createBuffer(this->bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, this->vertexBuffer, this->vertexBufferMemory);
 }
 
 Ttn::vertex::Ttn_Vertex_Buffer::~Ttn_Vertex_Buffer() {
+  vkDestroyBuffer(this->vkDevice, this->indexBuffer, nullptr);
+  vkFreeMemory(this->vkDevice, this->indexBufferMemory, nullptr);
   vkDestroyBuffer(this->vkDevice, this->vertexBuffer, nullptr);
-  vkFreeMemory(this->vkDevice, this->deviceMemory, nullptr);
+  vkFreeMemory(this->vkDevice, this->vertexBufferMemory, nullptr);
 }
 
 uint32_t Ttn::vertex::Ttn_Vertex_Buffer::findMemoryType(VkPhysicalDeviceMemoryProperties memProperties, uint32_t typeFilter, VkMemoryPropertyFlags properties) {
@@ -63,3 +40,55 @@ uint32_t Ttn::vertex::Ttn_Vertex_Buffer::findMemoryType(VkPhysicalDeviceMemoryPr
 
   return memoryType.value();
 }
+
+void Ttn::vertex::Ttn_Vertex_Buffer::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& vkBuffer, VkDeviceMemory& vkBufferMemory) {
+  VkPhysicalDeviceMemoryProperties memProperties;
+  vkGetPhysicalDeviceMemoryProperties(this->vkPhysicalDevice, &memProperties);
+
+  VkBufferCreateInfo bufferInfo {};
+  bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+  bufferInfo.size = size;
+  bufferInfo.usage = usage;
+  bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+  if (vkCreateBuffer(this->vkDevice, &bufferInfo, nullptr, &vkBuffer) != VK_SUCCESS) {
+    throw std::runtime_error("could not create vertex buffer");
+  }
+
+  VkMemoryRequirements memRequirements;
+  vkGetBufferMemoryRequirements(this->vkDevice, vkBuffer, &memRequirements);
+
+  VkMemoryAllocateInfo memAllocInfo {};
+  memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+  memAllocInfo.allocationSize = memRequirements.size;
+  memAllocInfo.memoryTypeIndex = this->findMemoryType(
+    memProperties,
+    memRequirements.memoryTypeBits,
+    properties
+  );
+
+  if (vkAllocateMemory(this->vkDevice, &memAllocInfo, nullptr, &vkBufferMemory) != VK_SUCCESS) {
+    throw std::runtime_error("could not allocate buffer memory");
+  }
+
+  vkBindBufferMemory(this->vkDevice, vkBuffer, vkBufferMemory, 0);
+}
+
+
+Ttn::vertex::StagingBuffer* Ttn::vertex::Ttn_Vertex_Buffer::createStagingBuffer(const void* data, VkDeviceSize size) {
+  VkBuffer stagingBuffer = VK_NULL_HANDLE;
+  VkDeviceMemory stagingMemory = VK_NULL_HANDLE;
+
+  this->createBuffer(size, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingMemory);
+
+  void* stagingData;
+  vkMapMemory(this->vkDevice, stagingMemory, 0, size, 0, &stagingData);
+  memcpy(stagingData, data, (size_t) size);
+  vkUnmapMemory(this->vkDevice, stagingMemory);
+
+  return new Ttn::vertex::StagingBuffer{
+    vkBuffer: stagingBuffer,
+    vkDeviceMemory: stagingMemory
+  };
+}
+

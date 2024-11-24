@@ -19,7 +19,8 @@ namespace Ttn {
 
       public:
         const std::vector<Vertex> vertices;
-        TtnVertex(const std::vector<Vertex>);
+        const std::vector<uint16_t> indices;
+        TtnVertex(const std::vector<Vertex>, const std::vector<uint16_t>);
         ~TtnVertex();
         static TtnVertex Default();
 
