@@ -3,11 +3,13 @@
 #include <format>
 #include <ttn/vertex/ttn_vertex.hpp>
 
-Ttn::pipelines::Ttn_Graphic_Pipeline::Ttn_Graphic_Pipeline(VkDevice vkDevice, Ttn::Logger& logger, Ttn::swapchain::Ttn_SwapChain& ttnSwapChain, Ttn::pipelines::Ttn_Renderpass& ttnRenderpass) :
+Ttn::pipelines::Ttn_Graphic_Pipeline::Ttn_Graphic_Pipeline(VkDevice vkDevice, Ttn::Logger& logger, Ttn::swapchain::Ttn_SwapChain& ttnSwapChain, Ttn::pipelines::Ttn_Renderpass& ttnRenderpass, Ttn::vertex::Ttn_Vertex_Buffer& ttnVertexBuffer, size_t maxFramesInFlight) :
   vkDevice{vkDevice},
   logger{logger},
   ttnSwapChain{ttnSwapChain},
-  ttnRenderpass{ttnRenderpass}
+  ttnRenderpass{ttnRenderpass},
+  ttnVertexBuffer{ttnVertexBuffer},
+  maxFramesInFlight{maxFramesInFlight}
 {
   auto shaderName = "shaders/triangle";
   this->logger.Info(std::format("Loading shader {}", shaderName));
@@ -79,7 +81,7 @@ Ttn::pipelines::Ttn_Graphic_Pipeline::Ttn_Graphic_Pipeline(VkDevice vkDevice, Tt
   rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
   rasterizer.lineWidth = 1.0f;
   rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-  rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+  rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
   rasterizer.depthBiasEnable = VK_FALSE;
   rasterizer.depthBiasConstantFactor = 0.0f; // Optional
   rasterizer.depthBiasClamp = 0.0f; // Optional
@@ -115,10 +117,43 @@ Ttn::pipelines::Ttn_Graphic_Pipeline::Ttn_Graphic_Pipeline(VkDevice vkDevice, Tt
   colorBlending.blendConstants[2] = 0.0f; // Optional
   colorBlending.blendConstants[3] = 0.0f; // Optional
 
+  this->ttnUbo = new Ttn::pipelines::Ttn_UniformObjectBuffer(this->vkDevice, this->maxFramesInFlight);
+  
+  std::vector<VkDescriptorSetLayout> layouts(this->maxFramesInFlight, this->ttnUbo->layoutDescriptor);
+  VkDescriptorSetAllocateInfo allocInfo {};
+  allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+  allocInfo.descriptorPool = this->ttnUbo->descriptorPool;
+  allocInfo.descriptorSetCount = static_cast<uint32_t>(this->maxFramesInFlight);
+  allocInfo.pSetLayouts = layouts.data();
+
+  this->descriptorSets.resize(this->maxFramesInFlight);
+  if (vkAllocateDescriptorSets(this->vkDevice, &allocInfo, this->descriptorSets.data()) != VK_SUCCESS) {
+    throw std::runtime_error("could not allocate descriptor sets");
+  }
+
+  for (size_t i = 0; i < this->maxFramesInFlight; i++) {
+    VkDescriptorBufferInfo bufferInfo {};
+    bufferInfo.buffer = this->ttnVertexBuffer.uniformBuffers[i];
+    bufferInfo.offset = 0;
+    bufferInfo.range = sizeof(Ttn::pipelines::UniformBufferObject);
+
+    VkWriteDescriptorSet descriptorWrite{};
+    descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    descriptorWrite.dstSet = this->descriptorSets[i];
+    descriptorWrite.dstBinding = 0;
+    descriptorWrite.dstArrayElement = 0;
+    descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    descriptorWrite.descriptorCount = 1;
+    descriptorWrite.pBufferInfo = &bufferInfo;
+    descriptorWrite.pImageInfo = nullptr;
+    descriptorWrite.pTexelBufferView = nullptr;
+    vkUpdateDescriptorSets(this->vkDevice, 1, &descriptorWrite, 0, nullptr);
+  }
+
   VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
   pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-  pipelineLayoutInfo.setLayoutCount = 0; // Optional
-  pipelineLayoutInfo.pSetLayouts = nullptr; // Optional
+  pipelineLayoutInfo.setLayoutCount = 1; // Optional
+  pipelineLayoutInfo.pSetLayouts = &ttnUbo->layoutDescriptor; // Optional
   pipelineLayoutInfo.pushConstantRangeCount = 0; // Optional
   pipelineLayoutInfo.pPushConstantRanges = nullptr; // Optional
 
@@ -153,6 +188,7 @@ Ttn::pipelines::Ttn_Graphic_Pipeline::Ttn_Graphic_Pipeline(VkDevice vkDevice, Tt
 }
 
 Ttn::pipelines::Ttn_Graphic_Pipeline::~Ttn_Graphic_Pipeline() {
+  delete this->ttnUbo;
   vkDestroyPipeline(this->vkDevice, this->pipeline, nullptr);
   vkDestroyPipelineLayout(this->vkDevice, this->pipelineLayout, nullptr);
 }

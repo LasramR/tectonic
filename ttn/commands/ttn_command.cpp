@@ -115,6 +115,7 @@ void Ttn::commands::Ttn_Command::recordCommandBuffer(uint32_t commandBufferIdx, 
   scissor.offset = {0, 0};
   scissor.extent = this->ttnSwapChain.getSwapChainExtent();
   vkCmdSetScissor(this->commandBuffers[commandBufferIdx], 0, 1, &scissor);
+  vkCmdBindDescriptorSets(this->commandBuffers[commandBufferIdx], VK_PIPELINE_BIND_POINT_GRAPHICS, this->ttnGraphicPipeline.pipelineLayout, 0, 1, &this->ttnGraphicPipeline.descriptorSets[commandBufferIdx], 0, nullptr);
   vkCmdDrawIndexed(this->commandBuffers[commandBufferIdx], static_cast<uint32_t>(this->ttnVertexBuffer.ttnVertex.indices.size()), 1, 0, 0, 0);
 
   vkCmdEndRenderPass(this->commandBuffers[commandBufferIdx]);

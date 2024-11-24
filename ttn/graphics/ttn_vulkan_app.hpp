@@ -1,7 +1,6 @@
 #pragma once
 
 #define GLFW_INCLUDE_VULKAN
-#define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
 
 #include <ttn/debug/ttn_vulkan_debugger.hpp>
@@ -17,11 +16,18 @@
 #include <ttn/commands/ttn_command.hpp>
 #include <ttn/sync/ttn_sync_objects.hpp>
 #include <ttn/vertex/ttn_vertex_buffer.hpp>
+#include <ttn/pipelines/ttn_uniform_object_buffer.hpp>
 
 #include <string>
 #include <vector>
 
 #include "vulkan/vulkan.h"
+
+#define GLM_FORCE_RADIANS
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+#include <chrono>
 
 namespace Ttn {
 
@@ -81,6 +87,7 @@ namespace Ttn {
       void run();
       void cleanUp();
       void drawFrame();
+      void updateUniformBuffer(uint32_t currentImage);
       void recreateSwapChain();
   };
 

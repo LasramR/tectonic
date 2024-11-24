@@ -17,6 +17,7 @@ namespace Ttn {
     class Ttn_Vertex_Buffer {
 
       private:
+        size_t maxFrameInFlight;
         VkDevice vkDevice;
         VkPhysicalDevice vkPhysicalDevice;
         uint32_t findMemoryType(VkPhysicalDeviceMemoryProperties, uint32_t, VkMemoryPropertyFlags);
@@ -28,13 +29,18 @@ namespace Ttn {
         VkDeviceSize bufferSize;
         VkBuffer vertexBuffer;
         VkDeviceMemory vertexBufferMemory;
-        
+
+        std::vector<VkBuffer> uniformBuffers;
+        std::vector<VkDeviceMemory> uniformBuffersMemory;
+        std::vector<void*> uniformBufferMapped;
+
         Ttn::vertex::TtnVertex ttnVertex;
 
-        Ttn_Vertex_Buffer(VkPhysicalDevice, VkDevice, Ttn::vertex::TtnVertex);
+        Ttn_Vertex_Buffer(VkPhysicalDevice, VkDevice, Ttn::vertex::TtnVertex, size_t);
         ~Ttn_Vertex_Buffer();
 
         StagingBuffer* createStagingBuffer(const void*, VkDeviceSize);
+        void createUniformBuffers(std::vector<VkBuffer>&, std::vector<VkDeviceMemory>&, std::vector<void*>&);
     };
 
   }

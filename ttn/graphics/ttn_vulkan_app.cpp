@@ -129,14 +129,15 @@ Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProp
   this->logger.Info("Creating render pass");
   this->ttnRenderpass = new Ttn::pipelines::Ttn_Renderpass(this->ttnLogicalDevice->getDevice(), this->ttnSwapChain->getSwapChainFormat());
 
+  this->logger.Info("Creating vertex buffer");
+  this->ttnVertexBuffer = new Ttn::vertex::Ttn_Vertex_Buffer(this->ttnPhysicalDevice->GetVkPhysicalDevice(), this->ttnLogicalDevice->getDevice(), Ttn::vertex::TtnVertex::Default(), this->MAX_FRAMES_IN_FLIGHT);
+
   this->logger.Info("Creating graphic pipeline");
-  this->ttnGraphicPipeline = new Ttn::pipelines::Ttn_Graphic_Pipeline(this->ttnLogicalDevice->getDevice(), this->logger, *this->ttnSwapChain, *this->ttnRenderpass);
+  this->ttnGraphicPipeline = new Ttn::pipelines::Ttn_Graphic_Pipeline(this->ttnLogicalDevice->getDevice(), this->logger, *this->ttnSwapChain, *this->ttnRenderpass, *this->ttnVertexBuffer, this->MAX_FRAMES_IN_FLIGHT);
 
   this->logger.Info("Creating frame buffers");
   this->ttnFramebuffer = new Ttn::graphics::Ttn_Framebuffer(this->ttnLogicalDevice->getDevice(), *this->ttnSwapChain, *this->ttnImageView, *this->ttnRenderpass);
 
-  this->logger.Info("Creating vertex buffer");
-  this->ttnVertexBuffer = new Ttn::vertex::Ttn_Vertex_Buffer(this->ttnPhysicalDevice->GetVkPhysicalDevice(), this->ttnLogicalDevice->getDevice(), Ttn::vertex::TtnVertex::Default());
 
   this->logger.Info("Creating command pool and command buffer");
   this->ttnCommand = new Ttn::commands::Ttn_Command(*this->ttnLogicalDevice, *this->ttnPhysicalDevice, *this->ttnFramebuffer, *this->ttnRenderpass, *this->ttnSwapChain, *this->ttnGraphicPipeline, this->MAX_FRAMES_IN_FLIGHT, *this->ttnVertexBuffer);
@@ -225,6 +226,7 @@ void Ttn::VulkanApp::drawFrame() {
   vkResetFences(device, 1, &this->ttnSyncObjects[currentFrame]->inFlightFence);
 
   this->ttnCommand->resetCommandBuffer(this->currentFrame);
+  this->updateUniformBuffer(this->currentFrame);
   this->ttnCommand->recordCommandBuffer(this->currentFrame, nextImageIndex);
   
   VkResult presentQueueResult = this->ttnCommand->submitCommandBuffer(this->currentFrame, nextImageIndex, this->ttnSyncObjects[this->currentFrame]->imageAvailableSemaphore, this->ttnSyncObjects[this->currentFrame]->renderFinishedSemaphore, this->ttnSyncObjects[this->currentFrame]->inFlightFence);
@@ -260,6 +262,21 @@ bool Ttn::VulkanApp::checkValidationLayerSupport() {
   }
 
   return true;
+}
+
+void Ttn::VulkanApp::updateUniformBuffer(uint32_t currentImage) {
+  static auto startTime = std::chrono::high_resolution_clock::now();
+
+  auto currentTime = std::chrono::high_resolution_clock::now();
+  float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+  
+  // TBH I will need to check what the actual fuck is these following lines doing
+  Ttn::pipelines::UniformBufferObject ubo {};
+  ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+  ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+  ubo.proj = glm::perspective(glm::radians(45.0f), this->ttnSwapChain->getSwapChainExtent().width / (float) this->ttnSwapChain->getSwapChainExtent().height, 0.1f, 10.0f);
+  ubo.proj[1][1] *= -1;
+  memcpy(this->ttnVertexBuffer->uniformBufferMapped[currentImage], &ubo, sizeof(ubo));
 }
 
 void Ttn::VulkanApp::recreateSwapChain() {
