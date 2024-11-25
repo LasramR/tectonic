@@ -41,4 +41,7 @@ shader: $(SPV_VERT) $(SPV_FRAG)
 %.frag.spv: %.frag
 	glslc $< -o $@
 
+ci: LDFLAGS=-lglfw -lvulkan -ldl -lpthread
+ci: build;
+
 .PHONY: all clean run dev
