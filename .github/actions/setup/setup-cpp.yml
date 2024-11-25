@@ -1,0 +1,10 @@
+name: "Setup cpp"
+description: "Sets up cpp"
+runs:
+  using: "composite"
+  steps:
+    - name: Set up cpp
+      shell: bash
+      run: |
+        sudo apt install g++-13
+        sudo apt install build-essential

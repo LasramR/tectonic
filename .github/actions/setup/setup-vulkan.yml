@@ -1,12 +1,8 @@
-name: "Setup cpp"
-description: "Sets up cpp"
+name: "Setup Vulkan"
+description: "Sets up Vulkan"
 runs:
   using: "composite"
   steps:
-    - name: Set up cpp
-      shell: bash
-      run: |
-        sudo apt install build-essential
     - name: Set up Vulkan
       shell: bash
       run: |
@@ -21,4 +17,3 @@ runs:
       shell: bash
       run: |
         sudo apt install libglm-dev
-      

@@ -12,9 +12,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       - name: Setup cpp
-        uses: ./.github/actions/setup
+        uses: ./.github/actions/setup-cpp
+      - name: Setup Vulkan
+        uses: ./.github/actions/setup-vulkan
       - name: Build app
         shell: bash
         run: |
-          g++ --version
           make build
