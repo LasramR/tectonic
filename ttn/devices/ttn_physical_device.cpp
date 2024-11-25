@@ -86,6 +86,12 @@ uint32_t Ttn::devices::Ttn_Physical_Device::getPhysicalDeviceScore(VkPhysicalDev
     return 0;
   }
 
+  VkPhysicalDeviceFeatures supportedFeatures;
+  vkGetPhysicalDeviceFeatures(vkPhysicalDevice, &supportedFeatures);
+  if (!supportedFeatures.samplerAnisotropy) {
+    return 0;
+  }
+
   return deviceScore;
 }
 

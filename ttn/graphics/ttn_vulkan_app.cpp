@@ -142,6 +142,9 @@ Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProp
   this->logger.Info("Creating command pool and command buffer");
   this->ttnCommand = new Ttn::commands::Ttn_Command(*this->ttnLogicalDevice, *this->ttnPhysicalDevice, *this->ttnFramebuffer, *this->ttnRenderpass, *this->ttnSwapChain, *this->ttnGraphicPipeline, this->MAX_FRAMES_IN_FLIGHT, *this->ttnVertexBuffer);
 
+  this->logger.Info("Loading textures");
+  this->ttnTexture = new Ttn::textures::Ttn_Texture(this->ttnLogicalDevice->getDevice(), this->ttnPhysicalDevice->GetVkPhysicalDevice(), "textures/texture.jpg", *this->ttnVertexBuffer, *this->ttnCommand);
+
   this->logger.Info("Creating sync objects");
   this->ttnSyncObjects.resize(this->MAX_FRAMES_IN_FLIGHT);
   for (int i = 0; i < this->MAX_FRAMES_IN_FLIGHT; i++) {
@@ -181,6 +184,7 @@ void Ttn::VulkanApp::cleanUp() {
   for (const auto& syncObject : this->ttnSyncObjects) {
     delete syncObject;
   }
+  delete this->ttnTexture;
   delete this->ttnCommand;
   delete this->ttnVertexBuffer;
   delete this->ttnFramebuffer;

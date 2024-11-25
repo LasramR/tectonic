@@ -23,6 +23,7 @@ Ttn::devices::Ttn_Logical_Device::Ttn_Logical_Device(VkInstance vkInstance, Ttn:
   }
   
   VkPhysicalDeviceFeatures deviceFeatures{}; // empty for now
+  deviceFeatures.samplerAnisotropy = VK_TRUE;
 
   this->vkDeviceCreateInfo = {};
   this->vkDeviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;

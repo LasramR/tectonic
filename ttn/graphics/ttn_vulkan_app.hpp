@@ -17,6 +17,7 @@
 #include <ttn/sync/ttn_sync_objects.hpp>
 #include <ttn/vertex/ttn_vertex_buffer.hpp>
 #include <ttn/pipelines/ttn_uniform_object_buffer.hpp>
+#include <ttn/textures/ttn_textures.hpp>
 
 #include <string>
 #include <vector>
@@ -24,6 +25,7 @@
 #include "vulkan/vulkan.h"
 
 #define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -79,6 +81,7 @@ namespace Ttn {
     bool frameBufferResized = false;
 
     Ttn::vertex::Ttn_Vertex_Buffer* ttnVertexBuffer;
+    Ttn::textures::Ttn_Texture* ttnTexture;
 
     public:
       VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProperties, const int MAX_FRAMES_IN_FLIGHT, Ttn::Logger& logger);
