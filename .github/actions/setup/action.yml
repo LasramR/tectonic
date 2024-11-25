@@ -1,0 +1,9 @@
+name: "Setup cpp"
+description: "Sets up cpp"
+runs:
+  using: "composite"
+  steps:
+    - name: Set up cpp
+      shell: bash
+      run: |
+        apt install build-essential

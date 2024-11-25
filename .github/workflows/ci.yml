@@ -1,0 +1,21 @@
+name: "Continuous Integration"
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Setup cpp
+        uses: ./.github/actions/setup
+      - name: Build app
+        shell: bash
+        run: |
+          g++ --version
+          make
