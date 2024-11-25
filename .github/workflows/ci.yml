@@ -11,10 +11,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      - name: Setup cpp
-        uses: ./.github/actions/setup-cpp
-      - name: Setup Vulkan
-        uses: ./.github/actions/setup-vulkan
+      - name: Setup cpp and Vulkan
+        uses: ./.github/actions/setup
       - name: Build app
         shell: bash
         run: |
