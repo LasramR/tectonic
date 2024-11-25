@@ -16,4 +16,4 @@ jobs:
       - name: Build app
         shell: bash
         run: |
-          make build
+          make ci
