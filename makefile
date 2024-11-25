@@ -11,7 +11,9 @@ SPV_VERT = $(VERT:%=%.spv)
 FRAG = $(shell find . -name '*.frag')
 SPV_FRAG = $(FRAG:%=%.spv)
 
-all: $(OUT_NAME) shader
+all: build shader
+
+build: $(OUT_NAME)
 
 $(OUT_NAME): $(OBJ)
 	g++ $(CFLAGS) -o $@ $(OBJ) $(LDFLAGS)

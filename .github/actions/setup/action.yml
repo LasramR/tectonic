@@ -7,3 +7,27 @@ runs:
       shell: bash
       run: |
         sudo apt install build-essential
+    - name: Set up Vulkan
+      shell: bash
+      run: |
+        sudo apt install vulkan-tools
+        sudo apt install libvulkan-dev
+        sudo apt install vulkan-validationlayers-dev spirv-tools
+    - name: Set up GLFW
+      shell: bash
+      run: |
+        sudo apt install libglfw3-dev
+    - name: Set up GLM
+      shell: bash
+      run: |
+        sudo apt install libglm-dev
+    - name: Set up Lunarg Vulkan SDK
+      shell: bash
+      run: |
+        wget -qO- https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo tee /etc/apt/trusted.gpg.d/lunarg.asc
+        sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-noble.list http://packages.lunarg.com/vulkan/lunarg-vulkan-noble.list
+        sudo apt update
+        sudo apt install vulkan-sdk
+
+
+      
