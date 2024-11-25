@@ -1,6 +1,7 @@
 #include "ttn_uniform_object_buffer.hpp"
 
 #include <stdexcept>
+#include <array>
 
 Ttn::pipelines::Ttn_UniformObjectBuffer::Ttn_UniformObjectBuffer(VkDevice vkDevice, size_t maxFrameInFlight) :
   vkDevice{vkDevice},
@@ -19,18 +20,33 @@ Ttn::pipelines::Ttn_UniformObjectBuffer::Ttn_UniformObjectBuffer(VkDevice vkDevi
   layoutInfo.bindingCount = 1;
   layoutInfo.pBindings = &uboLayoutBinding;
 
-  if (vkCreateDescriptorSetLayout(this->vkDevice, &layoutInfo, nullptr, &this->layoutDescriptor) != VK_SUCCESS) {
+  VkDescriptorSetLayoutBinding samplerLayoutBinding{};
+  samplerLayoutBinding.binding = 1;
+  samplerLayoutBinding.descriptorCount = 1;
+  samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+  samplerLayoutBinding.pImmutableSamplers = nullptr;
+  samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+  std::array<VkDescriptorSetLayoutBinding, 2> bindings = {uboLayoutBinding, samplerLayoutBinding};
+  VkDescriptorSetLayoutCreateInfo baseLayoutInfo {};
+  baseLayoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+  baseLayoutInfo.bindingCount = static_cast<uint32_t>(bindings.size());
+  baseLayoutInfo.pBindings = bindings.data();
+
+  if (vkCreateDescriptorSetLayout(this->vkDevice, &baseLayoutInfo, nullptr, &this->layoutDescriptor) != VK_SUCCESS) {
     throw std::runtime_error("could not create ubo layout descriptor");
   }
 
-  VkDescriptorPoolSize poolSize {};
-  poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-  poolSize.descriptorCount = static_cast<uint32_t>(this->maxFrameInFlight);
-  
+  std::array<VkDescriptorPoolSize, 2> poolSizes{};
+  poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+  poolSizes[0].descriptorCount = static_cast<uint32_t>(this->maxFrameInFlight);
+  poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+  poolSizes[1].descriptorCount = static_cast<uint32_t>(this->maxFrameInFlight);
+
   VkDescriptorPoolCreateInfo poolInfo {};
   poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-  poolInfo.poolSizeCount = 1;
-  poolInfo.pPoolSizes = &poolSize;
+  poolInfo.poolSizeCount = poolSizes.size();
+  poolInfo.pPoolSizes = poolSizes.data();
   poolInfo.maxSets = static_cast<uint32_t>(this->maxFrameInFlight);
   
   if (vkCreateDescriptorPool(this->vkDevice, &poolInfo, nullptr, &this->descriptorPool) != VK_SUCCESS) {

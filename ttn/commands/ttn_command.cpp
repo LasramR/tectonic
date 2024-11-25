@@ -2,13 +2,13 @@
 
 #include <stdexcept>
 
-Ttn::commands::Ttn_Command::Ttn_Command(Ttn::devices::Ttn_Logical_Device& ttnLogicalDevice, Ttn::devices::Ttn_Physical_Device& ttnPhysicalDevice, Ttn::graphics::Ttn_Framebuffer& ttnFramebuffer, Ttn::pipelines::Ttn_Renderpass& ttnRenderpass, Ttn::swapchain::Ttn_SwapChain& ttnSwapChain, Ttn::pipelines::Ttn_Graphic_Pipeline& ttnGraphicPipeline, const int commandBuffersCount, Ttn::vertex::Ttn_Vertex_Buffer& ttnVertexBuffer) :
+Ttn::commands::Ttn_Command::Ttn_Command(Ttn::devices::Ttn_Logical_Device& ttnLogicalDevice, Ttn::devices::Ttn_Physical_Device& ttnPhysicalDevice, Ttn::graphics::Ttn_Framebuffer& ttnFramebuffer, Ttn::pipelines::Ttn_Renderpass& ttnRenderpass, Ttn::swapchain::Ttn_SwapChain& ttnSwapChain, const int commandBuffersCount, Ttn::vertex::Ttn_Vertex_Buffer& ttnVertexBuffer) :
   ttnLogicalDevice{ttnLogicalDevice},
   ttnPhysicalDevice{ttnPhysicalDevice},
   ttnFramebuffer{ttnFramebuffer},
   ttnRenderpass{ttnRenderpass},
   ttnSwapChain{ttnSwapChain},
-  ttnGraphicPipeline{ttnGraphicPipeline},
+  ttnGraphicPipeline{nullptr},
   commandBuffersCount{commandBuffersCount},
   ttnVertexBuffer{ttnVertexBuffer}
 {
@@ -38,6 +38,11 @@ Ttn::commands::Ttn_Command::~Ttn_Command() {
   vkFreeCommandBuffers(this->ttnLogicalDevice.getDevice(), this->commandPool, this->commandBuffersCount, this->commandBuffers.data());
   vkDestroyCommandPool(this->ttnLogicalDevice.getDevice(), this->commandPool, nullptr);
 }
+
+void Ttn::commands::Ttn_Command::bindGraphicPipeline(Ttn::pipelines::Ttn_Graphic_Pipeline* ttnGraphicPipeline) {
+  this->ttnGraphicPipeline = ttnGraphicPipeline;
+}
+
 
 void Ttn::commands::Ttn_Command::copyBuffer(VkBuffer src, VkBuffer dst, VkDeviceSize size) {
   VkCommandBuffer commandBuffer = this->beginSingleTimeCommand();
@@ -73,7 +78,7 @@ void Ttn::commands::Ttn_Command::recordCommandBuffer(uint32_t commandBufferIdx, 
   renderPassBeginInfo.pClearValues = &clearColor;
 
   vkCmdBeginRenderPass(this->commandBuffers[commandBufferIdx], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
-  vkCmdBindPipeline(this->commandBuffers[commandBufferIdx], VK_PIPELINE_BIND_POINT_GRAPHICS, this->ttnGraphicPipeline.getPipeline());
+  vkCmdBindPipeline(this->commandBuffers[commandBufferIdx], VK_PIPELINE_BIND_POINT_GRAPHICS, this->ttnGraphicPipeline->getPipeline());
   
   VkBuffer vertexBuffers[] = { this->ttnVertexBuffer.vertexBuffer };
   VkDeviceSize offsets[] = {0};
@@ -93,7 +98,7 @@ void Ttn::commands::Ttn_Command::recordCommandBuffer(uint32_t commandBufferIdx, 
   scissor.offset = {0, 0};
   scissor.extent = this->ttnSwapChain.getSwapChainExtent();
   vkCmdSetScissor(this->commandBuffers[commandBufferIdx], 0, 1, &scissor);
-  vkCmdBindDescriptorSets(this->commandBuffers[commandBufferIdx], VK_PIPELINE_BIND_POINT_GRAPHICS, this->ttnGraphicPipeline.pipelineLayout, 0, 1, &this->ttnGraphicPipeline.descriptorSets[commandBufferIdx], 0, nullptr);
+  vkCmdBindDescriptorSets(this->commandBuffers[commandBufferIdx], VK_PIPELINE_BIND_POINT_GRAPHICS, this->ttnGraphicPipeline->pipelineLayout, 0, 1, &this->ttnGraphicPipeline->descriptorSets[commandBufferIdx], 0, nullptr);
   vkCmdDrawIndexed(this->commandBuffers[commandBufferIdx], static_cast<uint32_t>(this->ttnVertexBuffer.ttnVertex.indices.size()), 1, 0, 0, 0);
 
   vkCmdEndRenderPass(this->commandBuffers[commandBufferIdx]);

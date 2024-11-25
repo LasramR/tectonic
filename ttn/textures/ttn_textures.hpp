@@ -16,12 +16,12 @@ namespace Ttn {
         VkPhysicalDevice vkPhysicalDevice;
         Ttn::vertex::Ttn_Vertex_Buffer& ttnVertexBuffer;
         Ttn::commands::Ttn_Command& ttnCommand;
-        Ttn::textures::Ttn_Sampler* ttnSampler;
 
       public:
         VkImage textureImage;
         VkDeviceMemory textureImageMemory;
         VkImageView textureImageView;
+        Ttn::textures::Ttn_Sampler* ttnSampler;
 
         Ttn_Texture(VkDevice, VkPhysicalDevice, const char*, Ttn::vertex::Ttn_Vertex_Buffer&, Ttn::commands::Ttn_Command&);
         ~Ttn_Texture();

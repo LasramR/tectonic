@@ -16,6 +16,7 @@ namespace Ttn {
     typedef struct Vertex {
       glm::vec2 position;
       glm::vec3 color;
+      glm::vec2 texCoord;
     } Vertex;
 
     class TtnVertex {
@@ -28,7 +29,7 @@ namespace Ttn {
         static TtnVertex Default();
 
         VkVertexInputBindingDescription getBindingDescription();        
-        std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions();
+        std::array<VkVertexInputAttributeDescription, 3> getAttributeDescriptions();
     };
   }
 
