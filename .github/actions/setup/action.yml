@@ -6,8 +6,10 @@ runs:
     - name: Set up cpp
       shell: bash
       run: |
+        sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
         sudo apt update
-        sudo apt install -y build-essential
+        sudo apt install -y g++-13 build-essential
+        sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-13 13
     - name: Set up Vulkan
       shell: bash
       run: |
