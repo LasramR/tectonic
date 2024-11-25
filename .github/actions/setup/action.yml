@@ -7,7 +7,7 @@ runs:
       shell: bash
       run: |
         sudo apt update
-        sudo apt install -y g++-13 build-essential
+        sudo apt install -y build-essential
     - name: Set up Vulkan
       shell: bash
       run: |
