@@ -17,4 +17,4 @@ jobs:
         shell: bash
         run: |
           g++ --version
-          make
+          make build
