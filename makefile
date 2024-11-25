@@ -1,3 +1,4 @@
+CXX=g++-13
 CFLAGS=-std=c++20 -O2 -I./ext -I.
 LDFLAGS=-lglfw -lvulkan -ldl -lpthread -lX11 -lXxf86vm -lXrandr -lXi
 
@@ -16,11 +17,11 @@ all: build shader
 build: $(OUT_NAME)
 
 $(OUT_NAME): $(OBJ)
-	g++ $(CFLAGS) -o $@ $(OBJ) $(LDFLAGS)
+	$(CXX) $(CFLAGS) -o $@ $(OBJ) $(LDFLAGS)
 
 $(BIN_DIR)/%.o: %.cpp | $(BIN_DIR)
 	@mkdir -p $(dir $@)
-	g++ $(CFLAGS) -c $< -o $@ $(LDFLAGS)
+	$(CXX) $(CFLAGS) -c $< -o $@ $(LDFLAGS)
 
 $(BIN_DIR):
 	mkdir -p $(BIN_DIR)
