@@ -13,12 +13,18 @@ Ttn::vertex::TtnVertex::~TtnVertex() {
 
 Ttn::vertex::TtnVertex Ttn::vertex::TtnVertex::Default() {
   return Ttn::vertex::TtnVertex({
-    {{-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-    {{0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-    {{0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-    {{-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
+    {{-0.5f, -0.5f, 0.0f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+    {{0.5f, -0.5f, 0.0f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+    {{0.5f, 0.5f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+    {{-0.5f, 0.5f, 0.0f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}},
+
+    {{-0.5f, -0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {0.0f, 0.0f}},
+    {{0.5f, -0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {1.0f, 0.0f}},
+    {{0.5f, 0.5f, -0.5f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f}},
+    {{-0.5f, 0.5f, -0.5f}, {1.0f, 1.0f, 1.0f}, {0.0f, 1.0f}}
   }, {
-    0, 1, 2, 2, 3, 0
+    0, 1, 2, 2, 3, 0,
+    4, 5, 6, 6, 7, 4
   });
 }
 
@@ -37,7 +43,7 @@ std::array<VkVertexInputAttributeDescription, 3> Ttn::vertex::TtnVertex::getAttr
 
   attributeDescriptions[0].binding = 0;
   attributeDescriptions[0].location = 0;
-  attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+  attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
   attributeDescriptions[0].offset = offsetof(Vertex, position);
 
   attributeDescriptions[1].binding = 0;

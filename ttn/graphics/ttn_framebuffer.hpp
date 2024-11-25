@@ -19,9 +19,10 @@ namespace Ttn {
         Ttn::swapchain::Ttn_Image_View& ttnImageView;
         Ttn::pipelines::Ttn_Renderpass& ttnRenderpass;
         std::vector<VkFramebuffer> swapChainFrameBuffers;
+        VkImageView depthImageView;
 
       public:
-        Ttn_Framebuffer(VkDevice, Ttn::swapchain::Ttn_SwapChain&, Ttn::swapchain::Ttn_Image_View&, Ttn::pipelines::Ttn_Renderpass&);
+        Ttn_Framebuffer(VkDevice, Ttn::swapchain::Ttn_SwapChain&, Ttn::swapchain::Ttn_Image_View&, Ttn::pipelines::Ttn_Renderpass&, VkImageView);
         ~Ttn_Framebuffer();
         
         std::vector<VkFramebuffer>& getSwapChainFrameBuffers();

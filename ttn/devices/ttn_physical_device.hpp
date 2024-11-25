@@ -48,6 +48,7 @@ namespace Ttn {
         SwapChainSupportDetails swapChainSupportDetails;
         SwapChainSupportDetails querySwapChainSupportDetails(VkPhysicalDevice vkPhysicalDevice);
         
+        VkFormat findSupportedFormat(const std::vector<VkFormat>&, VkImageTiling, VkFormatFeatureFlags);
       public:
         Ttn_Physical_Device(VkInstance, VkSurfaceKHR, Ttn::Logger&);
         ~Ttn_Physical_Device();
@@ -56,6 +57,7 @@ namespace Ttn {
         VkPhysicalDevice GetVkPhysicalDevice();
         SwapChainSupportDetails getSwapChainSupportDetails();
         const std::vector<const char*>& getRequiredDeviceExtension();
+        VkFormat findDepthFormat();
     };
 
   };

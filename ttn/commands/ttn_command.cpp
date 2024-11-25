@@ -1,11 +1,11 @@
 #include "ttn_command.hpp"
 
 #include <stdexcept>
+#include <array>
 
-Ttn::commands::Ttn_Command::Ttn_Command(Ttn::devices::Ttn_Logical_Device& ttnLogicalDevice, Ttn::devices::Ttn_Physical_Device& ttnPhysicalDevice, Ttn::graphics::Ttn_Framebuffer& ttnFramebuffer, Ttn::pipelines::Ttn_Renderpass& ttnRenderpass, Ttn::swapchain::Ttn_SwapChain& ttnSwapChain, const int commandBuffersCount, Ttn::vertex::Ttn_Vertex_Buffer& ttnVertexBuffer) :
+Ttn::commands::Ttn_Command::Ttn_Command(Ttn::devices::Ttn_Logical_Device& ttnLogicalDevice, Ttn::devices::Ttn_Physical_Device& ttnPhysicalDevice, Ttn::pipelines::Ttn_Renderpass& ttnRenderpass, Ttn::swapchain::Ttn_SwapChain& ttnSwapChain, const int commandBuffersCount, Ttn::vertex::Ttn_Vertex_Buffer& ttnVertexBuffer) :
   ttnLogicalDevice{ttnLogicalDevice},
   ttnPhysicalDevice{ttnPhysicalDevice},
-  ttnFramebuffer{ttnFramebuffer},
   ttnRenderpass{ttnRenderpass},
   ttnSwapChain{ttnSwapChain},
   ttnGraphicPipeline{nullptr},
@@ -43,6 +43,10 @@ void Ttn::commands::Ttn_Command::bindGraphicPipeline(Ttn::pipelines::Ttn_Graphic
   this->ttnGraphicPipeline = ttnGraphicPipeline;
 }
 
+void Ttn::commands::Ttn_Command::bindFramebuffer(Ttn::graphics::Ttn_Framebuffer* ttnFramebuffer) {
+  this->ttnFramebuffer = ttnFramebuffer;
+}
+
 
 void Ttn::commands::Ttn_Command::copyBuffer(VkBuffer src, VkBuffer dst, VkDeviceSize size) {
   VkCommandBuffer commandBuffer = this->beginSingleTimeCommand();
@@ -69,13 +73,16 @@ void Ttn::commands::Ttn_Command::recordCommandBuffer(uint32_t commandBufferIdx, 
   VkRenderPassBeginInfo renderPassBeginInfo {};
   renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
   renderPassBeginInfo.renderPass = this->ttnRenderpass.getRenderpass();
-  renderPassBeginInfo.framebuffer = this->ttnFramebuffer.getSwapChainFrameBuffers()[imageIndex];
+  renderPassBeginInfo.framebuffer = this->ttnFramebuffer->getSwapChainFrameBuffers()[imageIndex];
   renderPassBeginInfo.renderArea.offset = {0, 0};
   renderPassBeginInfo.renderArea.extent = this->ttnSwapChain.getSwapChainExtent();
 
-  VkClearValue clearColor = {{{0.0f, 0.0f, 0.0f, 1.0f}}};
-  renderPassBeginInfo.clearValueCount = 1;
-  renderPassBeginInfo.pClearValues = &clearColor;
+  std::array<VkClearValue, 2> clearValues {};
+  clearValues[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+  clearValues[1].depthStencil = {1.0f, 0};
+
+  renderPassBeginInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+  renderPassBeginInfo.pClearValues = clearValues.data();
 
   vkCmdBeginRenderPass(this->commandBuffers[commandBufferIdx], &renderPassBeginInfo, VK_SUBPASS_CONTENTS_INLINE);
   vkCmdBindPipeline(this->commandBuffers[commandBufferIdx], VK_PIPELINE_BIND_POINT_GRAPHICS, this->ttnGraphicPipeline->getPipeline());
@@ -220,6 +227,16 @@ void Ttn::commands::Ttn_Command::transitionImageLayout(VkImage image, VkFormat f
   VkPipelineStageFlags sourceStage;
   VkPipelineStageFlags destinationStage;
 
+  if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+      barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+
+      if (this->hasStencilComponent(format)) {
+          barrier.subresourceRange.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+      }
+  } else {
+      barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+  }
+
   if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL) {
       barrier.srcAccessMask = 0;
       barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -232,11 +249,21 @@ void Ttn::commands::Ttn_Command::transitionImageLayout(VkImage image, VkFormat f
 
       sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
       destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+  } else if (oldLayout == VK_IMAGE_LAYOUT_UNDEFINED && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+      barrier.srcAccessMask = 0;
+      barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+
+      sourceStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+      destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
   } else {
-      throw std::invalid_argument("unsupported layout transition!");
+      throw std::invalid_argument("unsupported layout transition");
   }
 
   vkCmdPipelineBarrier(commandBuffer, sourceStage, destinationStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 
   this->endSingleTimeCommands(commandBuffer);
+}
+
+bool Ttn::commands::Ttn_Command::hasStencilComponent(VkFormat format) {
+  return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }

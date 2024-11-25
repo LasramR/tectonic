@@ -179,3 +179,26 @@ Ttn::devices::SwapChainSupportDetails Ttn::devices::Ttn_Physical_Device::getSwap
 const std::vector<const char*>& Ttn::devices::Ttn_Physical_Device::getRequiredDeviceExtension() {
   return Ttn::devices::Ttn_Physical_Device::vkRequiredDeviceExtensions;
 }
+
+VkFormat Ttn::devices::Ttn_Physical_Device::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling imageTiling, VkFormatFeatureFlags formatFeatures) {
+  for (VkFormat format : candidates) {
+    VkFormatProperties properties;
+    vkGetPhysicalDeviceFormatProperties(this->vkPhysicalDevice, format, &properties);
+
+    if (imageTiling == VK_IMAGE_TILING_LINEAR && (properties.linearTilingFeatures & formatFeatures) == formatFeatures) {
+      return format;
+    } else if (imageTiling == VK_IMAGE_TILING_OPTIMAL && (properties.optimalTilingFeatures & formatFeatures) == formatFeatures) {
+      return format;
+    }
+  }
+
+  throw std::runtime_error("could not find supported depth image format");
+}
+
+VkFormat Ttn::devices::Ttn_Physical_Device::findDepthFormat() {
+    return this->findSupportedFormat(
+        {VK_FORMAT_D32_SFLOAT, VK_FORMAT_D32_SFLOAT_S8_UINT, VK_FORMAT_D24_UNORM_S8_UINT},
+        VK_IMAGE_TILING_OPTIMAL,
+        VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+    );
+}

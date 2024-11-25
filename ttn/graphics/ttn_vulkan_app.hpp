@@ -18,6 +18,7 @@
 #include <ttn/vertex/ttn_vertex_buffer.hpp>
 #include <ttn/pipelines/ttn_uniform_object_buffer.hpp>
 #include <ttn/textures/ttn_textures.hpp>
+#include <ttn/depth/ttn_depth.hpp>
 
 #include <string>
 #include <vector>
@@ -26,6 +27,7 @@
 
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -82,7 +84,8 @@ namespace Ttn {
 
     Ttn::vertex::Ttn_Vertex_Buffer* ttnVertexBuffer;
     Ttn::textures::Ttn_Texture* ttnTexture;
-
+    Ttn::depth::Ttn_Depth* ttnDepth;
+    
     public:
       VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProperties, const int MAX_FRAMES_IN_FLIGHT, Ttn::Logger& logger);
       ~VulkanApp();

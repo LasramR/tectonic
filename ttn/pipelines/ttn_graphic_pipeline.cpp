@@ -161,6 +161,18 @@ Ttn::pipelines::Ttn_Graphic_Pipeline::Ttn_Graphic_Pipeline(VkDevice vkDevice, Tt
     vkUpdateDescriptorSets(this->vkDevice, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
   }
 
+  VkPipelineDepthStencilStateCreateInfo depthStencil{};
+  depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+  depthStencil.depthTestEnable = VK_TRUE;
+  depthStencil.depthWriteEnable = VK_TRUE;
+  depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
+  depthStencil.depthBoundsTestEnable = VK_FALSE;
+  depthStencil.minDepthBounds = 0.0f;
+  depthStencil.maxDepthBounds = 1.0f;
+  depthStencil.stencilTestEnable = VK_FALSE;
+  depthStencil.front = {};
+  depthStencil.back = {};
+  
   VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
   pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
   pipelineLayoutInfo.setLayoutCount = 1; // Optional
@@ -181,7 +193,7 @@ Ttn::pipelines::Ttn_Graphic_Pipeline::Ttn_Graphic_Pipeline(VkDevice vkDevice, Tt
   graphicPipelineCreateInfo.pViewportState = &viewPortStateCreateInfo;
   graphicPipelineCreateInfo.pRasterizationState = &rasterizer;
   graphicPipelineCreateInfo.pMultisampleState = &multisampling;
-  graphicPipelineCreateInfo.pDepthStencilState = nullptr;
+  graphicPipelineCreateInfo.pDepthStencilState = &depthStencil;
   graphicPipelineCreateInfo.pColorBlendState = &colorBlending;
   graphicPipelineCreateInfo.pDynamicState = &dynamicStateCreateInfo;
 
