@@ -2,6 +2,7 @@
 
 #include <string>
 #include <stdexcept>
+#include <ttn/shared/glfw_userpointer_registry.hpp>
 
 Ttn::Ttn_Window::Ttn_Window(VkInstance vkInstance, std::string name, Ttn_WindowProperties windowProperties, Ttn::Logger& logger) : 
   vkInstance{vkInstance},
@@ -9,7 +10,10 @@ Ttn::Ttn_Window::Ttn_Window(VkInstance vkInstance, std::string name, Ttn_WindowP
   windowProperties{windowProperties},
   resized{false},
   minimized{false},
-  logger{logger}
+  logger{logger},
+  actualWidth{windowProperties.width},
+  actualHeight{windowProperties.height},
+  isFullscreen{false}
 {
   glfwWindowHint(GLFW_RESIZABLE, this->windowProperties.resizable ? GLFW_TRUE : GLFW_FALSE);
   this->window = glfwCreateWindow(this->windowProperties.width, this->windowProperties.height, this->name.c_str(), nullptr, nullptr);
@@ -18,7 +22,6 @@ Ttn::Ttn_Window::Ttn_Window(VkInstance vkInstance, std::string name, Ttn_WindowP
     throw std::runtime_error("could not open window");
   }
   
-  glfwSetWindowUserPointer(this->window, this);
   glfwSetFramebufferSizeCallback(this->window, Ttn::Ttn_Window::framebufferResizeCallback);
 
   //this->vkSurfaceCreateInfo.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
@@ -58,6 +61,24 @@ bool Ttn::Ttn_Window::hasResized() {
 }
 
 void Ttn::Ttn_Window::framebufferResizeCallback(GLFWwindow* window, int width, int height) {
-    auto app = reinterpret_cast<Ttn::Ttn_Window*>(glfwGetWindowUserPointer(window));
-    app->resized = true;
+    auto app = reinterpret_cast<Ttn::shared::GlfwUserPointerRegistry*>(glfwGetWindowUserPointer(window));
+    app->ttnWindow->resized = true;
+    if (!app->ttnWindow->isFullscreen) {
+      app->ttnWindow->actualWidth = width;
+      app->ttnWindow->actualHeight = height;
+    }
+}
+
+void Ttn::Ttn_Window::toggleFullscreen() {
+  this->isFullscreen = !this->isFullscreen;
+
+  GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+  const GLFWvidmode *mode = glfwGetVideoMode(monitor);
+
+  if (this->isFullscreen) {
+    glfwSetWindowMonitor(this->window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+  } else {
+    glfwSetWindowMonitor(this->window, nullptr, mode->width/2 - this->actualWidth/2, mode->height/2 - this->actualHeight/2, this->actualWidth, this->actualHeight, mode->refreshRate);
+  }
+
 }

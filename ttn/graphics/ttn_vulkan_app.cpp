@@ -31,7 +31,7 @@ Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProp
   }
   
   glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-  
+
   this->vkApplicationInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
   this->vkApplicationInfo.pApplicationName = name.c_str();
   this->vkApplicationInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
@@ -110,6 +110,12 @@ Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProp
 
   this->logger.Info("Creating window and display surface");
   this->window = new Ttn::Ttn_Window(this->vkInstance, this->vkApplicationInfo.pApplicationName, windowProperties, this->logger);
+
+  this->logger.Info("Creating GLFW user pointer registry");
+  this->glfwUserPointerRegistry = new Ttn::shared::GlfwUserPointerRegistry();
+  glfwSetWindowUserPointer(this->window->getWindow(), (void*) this->glfwUserPointerRegistry);
+  this->logger.Info("Binding window to glfw pointer registry");
+  this->glfwUserPointerRegistry->ttnWindow = this->window;
 
   this->logger.Info("Selecting physical device");
   this->ttnPhysicalDevice = new Ttn::devices::Ttn_Physical_Device(this->vkInstance, this->window->getSurface(), this->logger);
@@ -191,6 +197,14 @@ Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProp
   vkDestroyBuffer(this->ttnLogicalDevice->getDevice(), stagingIndex->vkBuffer, nullptr);
   vkFreeMemory(this->ttnLogicalDevice->getDevice(), stagingIndex->vkDeviceMemory, nullptr);
   free(stagingIndex);
+
+  this->logger.Info("Creating keyboard listener");
+  this->keyboardInputListener = new Ttn::input::KeyboardInputListener(this->window->getWindow());
+  this->logger.Info("binding keyboard listener to GlfwUserPointerRegistry");
+  this->glfwUserPointerRegistry->keyboardInputListener = this->keyboardInputListener;
+
+  this->logger.Info("Creating rotate model animation");
+  this->rotateModelAnimation = new Ttn::animations::RotateModel(*this->ttnVertexBuffer);
 }
 
 Ttn::VulkanApp::~VulkanApp() {
@@ -200,6 +214,8 @@ Ttn::VulkanApp::~VulkanApp() {
 void Ttn::VulkanApp::initialize() {}
 
 void Ttn::VulkanApp::cleanUp() {
+  delete this->rotateModelAnimation;
+  delete this->keyboardInputListener;
   for (const auto& syncObject : this->ttnSyncObjects) {
     delete syncObject;
   }
@@ -221,12 +237,31 @@ void Ttn::VulkanApp::cleanUp() {
   }
   
   delete this->window;
+  delete this->glfwUserPointerRegistry;
   glfwTerminate();
 }
 
 void Ttn::VulkanApp::run() {
+  this->rotateModelAnimation->start();
   while(!this->window->ShouldClose()) {
       glfwPollEvents();
+      auto input = this->keyboardInputListener->consumeCurrentKeyboardInput();
+      if (input.has_value() && input.value().isPressed) {
+        auto key = input.value().key;
+
+        if (key == GLFW_KEY_ESCAPE || key == GLFW_KEY_A) {
+          glfwSetWindowShouldClose(this->window->getWindow(), GLFW_TRUE);
+        }
+
+        if (key == GLFW_KEY_SPACE) {
+          this->rotateModelAnimation->toggleAnimation();
+        }
+
+        if (key == GLFW_KEY_F11) {
+          this->window->toggleFullscreen();
+        }
+      }
+
       this->drawFrame();
   }
   vkDeviceWaitIdle(this->ttnLogicalDevice->getDevice());
@@ -251,7 +286,9 @@ void Ttn::VulkanApp::drawFrame() {
   vkResetFences(device, 1, &this->ttnSyncObjects[currentFrame]->inFlightFence);
 
   this->ttnCommand->resetCommandBuffer(this->currentFrame);
-  this->updateUniformBuffer(this->currentFrame);
+
+  this->rotateModelAnimation->updateUniformBuffer(this->ttnSwapChain->getSwapChainExtent(), this->currentFrame);
+
   this->ttnCommand->recordCommandBuffer(this->currentFrame, nextImageIndex);
   
   VkResult presentQueueResult = this->ttnCommand->submitCommandBuffer(this->currentFrame, nextImageIndex, this->ttnSyncObjects[this->currentFrame]->imageAvailableSemaphore, this->ttnSyncObjects[this->currentFrame]->renderFinishedSemaphore, this->ttnSyncObjects[this->currentFrame]->inFlightFence);
@@ -287,21 +324,6 @@ bool Ttn::VulkanApp::checkValidationLayerSupport() {
   }
 
   return true;
-}
-
-void Ttn::VulkanApp::updateUniformBuffer(uint32_t currentImage) {
-  static auto startTime = std::chrono::high_resolution_clock::now();
-
-  auto currentTime = std::chrono::high_resolution_clock::now();
-  float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-  
-  // TBH I will need to check what the actual fuck is these following lines doing
-  Ttn::pipelines::UniformBufferObject ubo {};
-  ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-  ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-  ubo.proj = glm::perspective(glm::radians(45.0f), this->ttnSwapChain->getSwapChainExtent().width / (float) this->ttnSwapChain->getSwapChainExtent().height, 0.1f, 10.0f);
-  ubo.proj[1][1] *= -1;
-  memcpy(this->ttnVertexBuffer->uniformBufferMapped[currentImage], &ubo, sizeof(ubo));
 }
 
 void Ttn::VulkanApp::recreateSwapChain() {

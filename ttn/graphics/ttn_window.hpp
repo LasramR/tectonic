@@ -26,6 +26,10 @@ namespace Ttn {
       std::string name;
       Ttn_WindowProperties windowProperties;
       Ttn::Logger& logger;
+      
+      int actualWidth;
+      int actualHeight;
+      bool isFullscreen;
 
       // VkXlibSurfaceCreateInfoKHR vkSurfaceCreateInfo;
       VkSurfaceKHR vkSurface;
@@ -41,6 +45,7 @@ namespace Ttn {
     bool ShouldClose();
     bool hasResized();
     static void framebufferResizeCallback(GLFWwindow* window, int width, int height);
+    void toggleFullscreen();
   };
 
 }

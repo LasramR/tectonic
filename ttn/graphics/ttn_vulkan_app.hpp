@@ -20,19 +20,15 @@
 #include <ttn/textures/ttn_textures.hpp>
 #include <ttn/depth/ttn_depth.hpp>
 #include <ttn/msaa/ttn_msaa.hpp>
+#include <ttn/input/keyboard_input.hpp>
+#include <ttn/shared/glfw_userpointer_registry.hpp>
+#include <ttn/animations/rotate_model.hpp>
 
 #include <string>
 #include <vector>
 
 #include "vulkan/vulkan.h"
 
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
-#include <chrono>
 
 namespace Ttn {
 
@@ -92,6 +88,12 @@ namespace Ttn {
 
     Ttn::msaa::Ttn_Msaa* ttnMsaa;
 
+    Ttn::shared::GlfwUserPointerRegistry* glfwUserPointerRegistry;
+    Ttn::input::KeyboardInputListener* keyboardInputListener;
+
+    Ttn::animations::RotateModel* rotateModelAnimation;
+
+
     public:
       VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProperties, const int MAX_FRAMES_IN_FLIGHT, const char*, const char*, Ttn::Logger& logger);
       ~VulkanApp();
@@ -99,7 +101,6 @@ namespace Ttn {
       void run();
       void cleanUp();
       void drawFrame();
-      void updateUniformBuffer(uint32_t currentImage);
       void recreateSwapChain();
   };
 
