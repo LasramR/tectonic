@@ -20,7 +20,7 @@ namespace Ttn {
         Ttn::devices::Ttn_Logical_Device& ttnLogicalDevice;
         Ttn::devices::Ttn_Physical_Device& ttnPhysicalDevice;
         Ttn::graphics::Ttn_Framebuffer* ttnFramebuffer;
-        Ttn::pipelines::Ttn_Renderpass& ttnRenderpass;
+        Ttn::pipelines::Ttn_Renderpass* ttnRenderpass;
         Ttn::swapchain::Ttn_SwapChain& ttnSwapChain;
         Ttn::pipelines::Ttn_Graphic_Pipeline* ttnGraphicPipeline;
         Ttn::vertex::Ttn_Vertex_Buffer& ttnVertexBuffer;
@@ -35,11 +35,12 @@ namespace Ttn {
         void endSingleTimeCommands(VkCommandBuffer commandBuffer);
       
       public:
-        Ttn_Command(Ttn::devices::Ttn_Logical_Device&, Ttn::devices::Ttn_Physical_Device&, Ttn::pipelines::Ttn_Renderpass&, Ttn::swapchain::Ttn_SwapChain&, const int, Ttn::vertex::Ttn_Vertex_Buffer&);
+        Ttn_Command(Ttn::devices::Ttn_Logical_Device&, Ttn::devices::Ttn_Physical_Device&, Ttn::swapchain::Ttn_SwapChain&, const int, Ttn::vertex::Ttn_Vertex_Buffer&);
         ~Ttn_Command();
 
         void bindGraphicPipeline(Ttn::pipelines::Ttn_Graphic_Pipeline* ttnGraphicPipeline);
         void bindFramebuffer(Ttn::graphics::Ttn_Framebuffer* ttnFramebuffer);
+        void bindRenderpass(Ttn::pipelines::Ttn_Renderpass* ttnRenderpass);
         void copyBuffer(VkBuffer src, VkBuffer dst, VkDeviceSize size);
         void copyBufferToImage(VkBuffer, VkImage, uint32_t, uint32_t);
         void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t);

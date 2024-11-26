@@ -26,8 +26,8 @@ Ttn::textures::Ttn_Sampler::Ttn_Sampler(VkDevice vkDevice, VkPhysicalDevice vkPh
   samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
   samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
   samplerInfo.mipLodBias = 0.0f;
-  samplerInfo.minLod = static_cast<float>(this->mipLevels);
-  samplerInfo.maxLod = 0.0f;
+  samplerInfo.minLod = 0.0f;
+  samplerInfo.maxLod = static_cast<float>(this->mipLevels);
 
   if (vkCreateSampler(this->vkDevice, &samplerInfo, nullptr, &this->textureSampler) != VK_SUCCESS) {
     throw std::runtime_error("could not create sampler");

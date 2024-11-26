@@ -49,10 +49,12 @@ namespace Ttn {
         SwapChainSupportDetails querySwapChainSupportDetails(VkPhysicalDevice vkPhysicalDevice);
         
         VkFormat findSupportedFormat(const std::vector<VkFormat>&, VkImageTiling, VkFormatFeatureFlags);
+        VkSampleCountFlagBits getMaxUsableSampleCount(VkPhysicalDeviceProperties);
       public:
         Ttn_Physical_Device(VkInstance, VkSurfaceKHR, Ttn::Logger&);
         ~Ttn_Physical_Device();
 
+        VkSampleCountFlagBits msaaSamples;
         QueueFamilyIndices getQueueFamilyIndices();
         VkPhysicalDevice GetVkPhysicalDevice();
         SwapChainSupportDetails getSwapChainSupportDetails();

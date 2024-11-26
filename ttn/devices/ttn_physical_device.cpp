@@ -17,7 +17,8 @@ Ttn::devices::Ttn_Physical_Device::Ttn_Physical_Device(VkInstance vkInstance, Vk
   vkSurface{vkSurface},
   logger{logger}, 
   vkPhysicalDevice{VK_NULL_HANDLE}, 
-  physicalDeviceScore{0} 
+  physicalDeviceScore{0},
+  msaaSamples{VK_SAMPLE_COUNT_1_BIT}
 {
   vkEnumeratePhysicalDevices(this->vkInstance, &this->deviceCount, nullptr);
 
@@ -41,6 +42,7 @@ Ttn::devices::Ttn_Physical_Device::Ttn_Physical_Device(VkInstance vkInstance, Vk
       this->vkPhysicalDeviceProperties = deviceProperties;
       this->vkPhysicalDeviceFeatures = deviceFeatures;
       this->physicalDeviceScore = deviceScore;
+      this->msaaSamples = this->getMaxUsableSampleCount(deviceProperties);
     }
   }
 
@@ -68,7 +70,8 @@ uint32_t Ttn::devices::Ttn_Physical_Device::getPhysicalDeviceScore(VkPhysicalDev
   }
   
   deviceScore += vkPhysicalDeviceProperties.limits.maxImageDimension2D;
-  
+  deviceScore += this->getMaxUsableSampleCount(vkPhysicalDeviceProperties) << 1;
+
   if (!vkPhysicalDeviceFeatures.geometryShader) {
     return 0; // Application will not work without a geometry shader
   }
@@ -201,4 +204,34 @@ VkFormat Ttn::devices::Ttn_Physical_Device::findDepthFormat() {
         VK_IMAGE_TILING_OPTIMAL,
         VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
     );
+}
+
+VkSampleCountFlagBits Ttn::devices::Ttn_Physical_Device::getMaxUsableSampleCount(VkPhysicalDeviceProperties properties) {
+  VkSampleCountFlags counts = properties.limits.framebufferColorSampleCounts & properties.limits.framebufferDepthSampleCounts;
+
+  if (counts & VK_SAMPLE_COUNT_64_BIT) {
+    return VK_SAMPLE_COUNT_64_BIT;
+  }
+
+  if (counts & VK_SAMPLE_COUNT_32_BIT) {
+    return VK_SAMPLE_COUNT_32_BIT;
+  }
+
+  if (counts & VK_SAMPLE_COUNT_16_BIT) {
+    return VK_SAMPLE_COUNT_16_BIT;
+  }
+
+  if (counts & VK_SAMPLE_COUNT_8_BIT) {
+    return VK_SAMPLE_COUNT_8_BIT;
+  }
+
+  if (counts & VK_SAMPLE_COUNT_4_BIT) {
+    return VK_SAMPLE_COUNT_4_BIT;
+  }
+
+  if (counts & VK_SAMPLE_COUNT_2_BIT) {
+    return VK_SAMPLE_COUNT_2_BIT;
+  }
+
+  return VK_SAMPLE_COUNT_1_BIT;
 }

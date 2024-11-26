@@ -128,9 +128,6 @@ Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProp
   this->logger.Info("Creating image views");
   this->ttnImageView = new Ttn::swapchain::Ttn_Image_View(this->ttnLogicalDevice->getDevice(), this->ttnSwapChain);
 
-  this->logger.Info("Creating render pass");
-  this->ttnRenderpass = new Ttn::pipelines::Ttn_Renderpass(this->ttnLogicalDevice->getDevice(), this->ttnSwapChain->getSwapChainFormat(), *this->ttnPhysicalDevice);
-
   this->logger.Info(std::format("Loading model {}", this->MODEL_PATH));
   auto model = Ttn::vertex::TtnVertex(this->MODEL_PATH);
 
@@ -138,19 +135,25 @@ Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProp
   this->ttnVertexBuffer = new Ttn::vertex::Ttn_Vertex_Buffer(this->ttnPhysicalDevice->GetVkPhysicalDevice(), this->ttnLogicalDevice->getDevice(), model, this->MAX_FRAMES_IN_FLIGHT);
 
   this->logger.Info("Creating command pool and command buffer");
-  this->ttnCommand = new Ttn::commands::Ttn_Command(*this->ttnLogicalDevice, *this->ttnPhysicalDevice, *this->ttnRenderpass, *this->ttnSwapChain, this->MAX_FRAMES_IN_FLIGHT, *this->ttnVertexBuffer);
+  this->ttnCommand = new Ttn::commands::Ttn_Command(*this->ttnLogicalDevice, *this->ttnPhysicalDevice, *this->ttnSwapChain, this->MAX_FRAMES_IN_FLIGHT, *this->ttnVertexBuffer);
+
+  this->logger.Info("Creating Multi aliasing");
+  this->ttnMsaa = new Ttn::msaa::Ttn_Msaa(this->ttnLogicalDevice->getDevice(), *this->ttnPhysicalDevice, *this->ttnSwapChain);
+  
+  this->logger.Info("Creating render pass");
+  this->ttnRenderpass = new Ttn::pipelines::Ttn_Renderpass(this->ttnLogicalDevice->getDevice(), this->ttnSwapChain->getSwapChainFormat(), *this->ttnPhysicalDevice, *this->ttnMsaa);
 
   this->logger.Info("Creating depth image");
   this->ttnDepth = new Ttn::depth::Ttn_Depth(this->ttnLogicalDevice->getDevice(), *this->ttnPhysicalDevice, *this->ttnSwapChain, *this->ttnVertexBuffer, *this->ttnCommand);
   
   this->logger.Info("Creating frame buffers");
-  this->ttnFramebuffer = new Ttn::graphics::Ttn_Framebuffer(this->ttnLogicalDevice->getDevice(), *this->ttnSwapChain, *this->ttnImageView, *this->ttnRenderpass, this->ttnDepth->depthImageView);
+  this->ttnFramebuffer = new Ttn::graphics::Ttn_Framebuffer(this->ttnLogicalDevice->getDevice(), *this->ttnSwapChain, *this->ttnImageView, *this->ttnRenderpass, this->ttnDepth->depthImageView, this->ttnMsaa->colorImageView);
 
   this->logger.Info(std::format("Loading textures {}", this->TEXTURE_PATH));
   this->ttnTexture = new Ttn::textures::Ttn_Texture(this->ttnLogicalDevice->getDevice(), this->ttnPhysicalDevice->GetVkPhysicalDevice(), this->TEXTURE_PATH, *this->ttnVertexBuffer, *this->ttnCommand);
 
   this->logger.Info("Creating graphic pipeline");
-  this->ttnGraphicPipeline = new Ttn::pipelines::Ttn_Graphic_Pipeline(this->ttnLogicalDevice->getDevice(), this->logger, *this->ttnSwapChain, *this->ttnRenderpass, *this->ttnVertexBuffer, this->ttnTexture->textureImageView, this->ttnTexture->ttnSampler->textureSampler, this->MAX_FRAMES_IN_FLIGHT, model);
+  this->ttnGraphicPipeline = new Ttn::pipelines::Ttn_Graphic_Pipeline(this->ttnLogicalDevice->getDevice(), this->logger, *this->ttnSwapChain, *this->ttnRenderpass, *this->ttnVertexBuffer, this->ttnTexture->textureImageView, this->ttnTexture->ttnSampler->textureSampler, this->MAX_FRAMES_IN_FLIGHT, model, this->ttnPhysicalDevice->msaaSamples);
 
   this->logger.Info("Binding graphic pipeline to command buffer");
   this->ttnCommand->bindGraphicPipeline(this->ttnGraphicPipeline);
@@ -158,6 +161,8 @@ Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProp
   this->logger.Info("Binding frame buffer to command buffer");
   this->ttnCommand->bindFramebuffer(this->ttnFramebuffer);
 
+  this->logger.Info("Binding frame render pass to command buffer");
+  this->ttnCommand->bindRenderpass(this->ttnRenderpass);
 
   this->logger.Info("Creating sync objects");
   this->ttnSyncObjects.resize(this->MAX_FRAMES_IN_FLIGHT);
@@ -202,6 +207,7 @@ void Ttn::VulkanApp::cleanUp() {
   delete this->ttnTexture;
   delete this->ttnFramebuffer;
   delete this->ttnDepth;
+  delete this->ttnMsaa;
   delete this->ttnCommand;
   delete this->ttnVertexBuffer;
   delete this->ttnRenderpass;
@@ -315,6 +321,7 @@ void Ttn::VulkanApp::recreateSwapChain() {
 
   delete this->ttnFramebuffer;
   delete this->ttnDepth;
+  delete this->ttnMsaa;
   delete this->ttnCommand;
   delete this->ttnImageView;
   delete this->ttnSwapChain;
@@ -325,9 +332,11 @@ void Ttn::VulkanApp::recreateSwapChain() {
     this->window
   );
   this->ttnImageView = new Ttn::swapchain::Ttn_Image_View(this->ttnLogicalDevice->getDevice(), this->ttnSwapChain);
-  this->ttnCommand = new Ttn::commands::Ttn_Command(*this->ttnLogicalDevice, *this->ttnPhysicalDevice, *this->ttnRenderpass, *this->ttnSwapChain, this->MAX_FRAMES_IN_FLIGHT, *this->ttnVertexBuffer);
+  this->ttnCommand = new Ttn::commands::Ttn_Command(*this->ttnLogicalDevice, *this->ttnPhysicalDevice, *this->ttnSwapChain, this->MAX_FRAMES_IN_FLIGHT, *this->ttnVertexBuffer);
+  this->ttnMsaa = new Ttn::msaa::Ttn_Msaa(this->ttnLogicalDevice->getDevice(), *this->ttnPhysicalDevice, *this->ttnSwapChain);
   this->ttnDepth = new Ttn::depth::Ttn_Depth(this->ttnLogicalDevice->getDevice(), *this->ttnPhysicalDevice, *this->ttnSwapChain, *this->ttnVertexBuffer, *this->ttnCommand);
-  this->ttnFramebuffer = new Ttn::graphics::Ttn_Framebuffer(this->ttnLogicalDevice->getDevice(), *this->ttnSwapChain, *this->ttnImageView, *this->ttnRenderpass, this->ttnDepth->depthImageView);
+  this->ttnFramebuffer = new Ttn::graphics::Ttn_Framebuffer(this->ttnLogicalDevice->getDevice(), *this->ttnSwapChain, *this->ttnImageView, *this->ttnRenderpass, this->ttnDepth->depthImageView, this->ttnMsaa->colorImageView);
   this->ttnCommand->bindGraphicPipeline(this->ttnGraphicPipeline);
   this->ttnCommand->bindFramebuffer(this->ttnFramebuffer);
+  this->ttnCommand->bindRenderpass(this->ttnRenderpass);
 }

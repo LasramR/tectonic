@@ -8,6 +8,8 @@
 
 #include <iostream>
 
+#include <ttn/shared/image.hpp>
+
 Ttn::vertex::Ttn_Vertex_Buffer::Ttn_Vertex_Buffer(VkPhysicalDevice vkPhysicalDevice, VkDevice vkDevice, Ttn::vertex::TtnVertex& ttnVertex, size_t maxFrameInflight) :
   vkDevice{vkDevice},
   vkPhysicalDevice{vkPhysicalDevice},
@@ -35,21 +37,6 @@ Ttn::vertex::Ttn_Vertex_Buffer::~Ttn_Vertex_Buffer() {
   vkFreeMemory(this->vkDevice, this->vertexBufferMemory, nullptr);
 }
 
-uint32_t Ttn::vertex::Ttn_Vertex_Buffer::findMemoryType(VkPhysicalDeviceMemoryProperties memProperties, uint32_t typeFilter, VkMemoryPropertyFlags properties) {
-  std::optional<uint32_t> memoryType;
-  for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++) {
-      if (typeFilter & (1 << i) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties) {
-          memoryType = i;
-      }
-  }
-
-  if (!memoryType.has_value()) {
-    throw std::runtime_error("failed to find suitable memory type!");
-  }
-
-  return memoryType.value();
-}
-
 void Ttn::vertex::Ttn_Vertex_Buffer::createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& vkBuffer, VkDeviceMemory& vkBufferMemory) {
   VkPhysicalDeviceMemoryProperties memProperties;
   vkGetPhysicalDeviceMemoryProperties(this->vkPhysicalDevice, &memProperties);
@@ -70,7 +57,7 @@ void Ttn::vertex::Ttn_Vertex_Buffer::createBuffer(VkDeviceSize size, VkBufferUsa
   VkMemoryAllocateInfo memAllocInfo {};
   memAllocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
   memAllocInfo.allocationSize = memRequirements.size;
-  memAllocInfo.memoryTypeIndex = this->findMemoryType(
+  memAllocInfo.memoryTypeIndex = Ttn::shared::findMemoryType(
     memProperties,
     memRequirements.memoryTypeBits,
     properties

@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <array>
 
-Ttn::graphics::Ttn_Framebuffer::Ttn_Framebuffer(VkDevice vkDevice, Ttn::swapchain::Ttn_SwapChain& ttnSwapChain, Ttn::swapchain::Ttn_Image_View& ttnImageView, Ttn::pipelines::Ttn_Renderpass& ttnRenderpass, VkImageView depthImageView) :
+Ttn::graphics::Ttn_Framebuffer::Ttn_Framebuffer(VkDevice vkDevice, Ttn::swapchain::Ttn_SwapChain& ttnSwapChain, Ttn::swapchain::Ttn_Image_View& ttnImageView, Ttn::pipelines::Ttn_Renderpass& ttnRenderpass, VkImageView depthImageView, VkImageView colorImageView) :
   vkDevice{vkDevice},
   ttnSwapChain{ttnSwapChain},
   ttnImageView{ttnImageView},
@@ -12,9 +12,11 @@ Ttn::graphics::Ttn_Framebuffer::Ttn_Framebuffer(VkDevice vkDevice, Ttn::swapchai
 {
   this->swapChainFrameBuffers.resize(this->ttnImageView.getImageViews().size());
   for (size_t i = 0; i < this->ttnImageView.getImageViews().size(); i++) {
-    std::array<VkImageView, 2> attachment = {
-      this->ttnImageView.getImageViews()[i],
-      this->depthImageView
+    std::array<VkImageView, 3> attachment = {
+      // This order is actually important
+      colorImageView,
+      this->depthImageView,
+      this->ttnImageView.getImageViews()[i]
     };
 
     VkFramebufferCreateInfo frameBufferCreateInfo {};

@@ -2,7 +2,7 @@
 
 #include <format>
 
-Ttn::pipelines::Ttn_Graphic_Pipeline::Ttn_Graphic_Pipeline(VkDevice vkDevice, Ttn::Logger& logger, Ttn::swapchain::Ttn_SwapChain& ttnSwapChain, Ttn::pipelines::Ttn_Renderpass& ttnRenderpass, Ttn::vertex::Ttn_Vertex_Buffer& ttnVertexBuffer, VkImageView textureView, VkSampler sampler, size_t maxFramesInFlight, Ttn::vertex::TtnVertex& ttnVertex) :
+Ttn::pipelines::Ttn_Graphic_Pipeline::Ttn_Graphic_Pipeline(VkDevice vkDevice, Ttn::Logger& logger, Ttn::swapchain::Ttn_SwapChain& ttnSwapChain, Ttn::pipelines::Ttn_Renderpass& ttnRenderpass, Ttn::vertex::Ttn_Vertex_Buffer& ttnVertexBuffer, VkImageView textureView, VkSampler sampler, size_t maxFramesInFlight, Ttn::vertex::TtnVertex& ttnVertex, VkSampleCountFlagBits sampleCount) :
   vkDevice{vkDevice},
   logger{logger},
   ttnSwapChain{ttnSwapChain},
@@ -88,7 +88,7 @@ Ttn::pipelines::Ttn_Graphic_Pipeline::Ttn_Graphic_Pipeline(VkDevice vkDevice, Tt
   VkPipelineMultisampleStateCreateInfo multisampling{};
   multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
   multisampling.sampleShadingEnable = VK_FALSE;
-  multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+  multisampling.rasterizationSamples = sampleCount;
   multisampling.minSampleShading = 1.0f; // Optional
   multisampling.pSampleMask = nullptr; // Optional
   multisampling.alphaToCoverageEnable = VK_FALSE; // Optional

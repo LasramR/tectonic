@@ -22,8 +22,6 @@ namespace Ttn {
         Ttn::vertex::Ttn_Vertex_Buffer& ttnVertexBuffer;
         Ttn::commands::Ttn_Command& ttnCommand;
 
-        void createImage(uint32_t width, uint32_t height, VkFormat imageFormat, VkImageTiling imageTiling, VkImageUsageFlags imageUsage, VkMemoryPropertyFlags properties, VkImage& vkImage, VkDeviceMemory& vkMemory);
-
       public:
         VkImage depthImage;
         VkDeviceMemory depthImageMemory;

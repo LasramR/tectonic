@@ -19,6 +19,7 @@
 #include <ttn/pipelines/ttn_uniform_object_buffer.hpp>
 #include <ttn/textures/ttn_textures.hpp>
 #include <ttn/depth/ttn_depth.hpp>
+#include <ttn/msaa/ttn_msaa.hpp>
 
 #include <string>
 #include <vector>
@@ -88,6 +89,8 @@ namespace Ttn {
     
     const char* MODEL_PATH;
     const char* TEXTURE_PATH;
+
+    Ttn::msaa::Ttn_Msaa* ttnMsaa;
 
     public:
       VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProperties, const int MAX_FRAMES_IN_FLIGHT, const char*, const char*, Ttn::Logger& logger);

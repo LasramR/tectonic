@@ -3,12 +3,12 @@
 #include <stdexcept>
 #include <array>
 
-Ttn::commands::Ttn_Command::Ttn_Command(Ttn::devices::Ttn_Logical_Device& ttnLogicalDevice, Ttn::devices::Ttn_Physical_Device& ttnPhysicalDevice, Ttn::pipelines::Ttn_Renderpass& ttnRenderpass, Ttn::swapchain::Ttn_SwapChain& ttnSwapChain, const int commandBuffersCount, Ttn::vertex::Ttn_Vertex_Buffer& ttnVertexBuffer) :
+Ttn::commands::Ttn_Command::Ttn_Command(Ttn::devices::Ttn_Logical_Device& ttnLogicalDevice, Ttn::devices::Ttn_Physical_Device& ttnPhysicalDevice, Ttn::swapchain::Ttn_SwapChain& ttnSwapChain, const int commandBuffersCount, Ttn::vertex::Ttn_Vertex_Buffer& ttnVertexBuffer) :
   ttnLogicalDevice{ttnLogicalDevice},
   ttnPhysicalDevice{ttnPhysicalDevice},
-  ttnRenderpass{ttnRenderpass},
   ttnSwapChain{ttnSwapChain},
   ttnGraphicPipeline{nullptr},
+  ttnRenderpass{nullptr},
   commandBuffersCount{commandBuffersCount},
   ttnVertexBuffer{ttnVertexBuffer}
 {
@@ -47,6 +47,10 @@ void Ttn::commands::Ttn_Command::bindFramebuffer(Ttn::graphics::Ttn_Framebuffer*
   this->ttnFramebuffer = ttnFramebuffer;
 }
 
+void Ttn::commands::Ttn_Command::bindRenderpass(Ttn::pipelines::Ttn_Renderpass* ttnRenderpass) {
+  this->ttnRenderpass = ttnRenderpass;
+}
+
 
 void Ttn::commands::Ttn_Command::copyBuffer(VkBuffer src, VkBuffer dst, VkDeviceSize size) {
   VkCommandBuffer commandBuffer = this->beginSingleTimeCommand();
@@ -72,7 +76,7 @@ void Ttn::commands::Ttn_Command::recordCommandBuffer(uint32_t commandBufferIdx, 
 
   VkRenderPassBeginInfo renderPassBeginInfo {};
   renderPassBeginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-  renderPassBeginInfo.renderPass = this->ttnRenderpass.getRenderpass();
+  renderPassBeginInfo.renderPass = this->ttnRenderpass->getRenderpass();
   renderPassBeginInfo.framebuffer = this->ttnFramebuffer->getSwapChainFrameBuffers()[imageIndex];
   renderPassBeginInfo.renderArea.offset = {0, 0};
   renderPassBeginInfo.renderArea.extent = this->ttnSwapChain.getSwapChainExtent();
