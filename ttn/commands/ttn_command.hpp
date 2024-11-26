@@ -42,11 +42,11 @@ namespace Ttn {
         void bindFramebuffer(Ttn::graphics::Ttn_Framebuffer* ttnFramebuffer);
         void copyBuffer(VkBuffer src, VkBuffer dst, VkDeviceSize size);
         void copyBufferToImage(VkBuffer, VkImage, uint32_t, uint32_t);
-        void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+        void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t);
         void recordCommandBuffer(uint32_t, uint32_t);
         void resetCommandBuffer(uint32_t);
         VkResult submitCommandBuffer(uint32_t, uint32_t, VkSemaphore, VkSemaphore, VkFence);
-        
+        void generateMipMaps(VkImage image, VkFormat imageFormat, uint32_t texWidth, uint32_t texHeight, uint32_t mipLevels);
     };
 
   };

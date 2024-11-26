@@ -16,8 +16,8 @@ namespace Ttn {
         VkPhysicalDevice vkPhysicalDevice;
         Ttn::vertex::Ttn_Vertex_Buffer& ttnVertexBuffer;
         Ttn::commands::Ttn_Command& ttnCommand;
-
       public:
+        uint32_t mipLevels;
         VkImage textureImage;
         VkDeviceMemory textureImageMemory;
         VkImageView textureImageView;
@@ -26,7 +26,7 @@ namespace Ttn {
         Ttn_Texture(VkDevice, VkPhysicalDevice, const char*, Ttn::vertex::Ttn_Vertex_Buffer&, Ttn::commands::Ttn_Command&);
         ~Ttn_Texture();
 
-        void createImage(uint32_t, uint32_t, VkFormat, VkImageTiling, VkImageUsageFlags, VkMemoryPropertyFlags, VkImage&, VkDeviceMemory&);
+        void createImage(uint32_t, uint32_t, VkFormat, VkImageTiling, VkImageUsageFlags, VkMemoryPropertyFlags, VkImage&, VkDeviceMemory&, uint32_t);
     };
   }
 }

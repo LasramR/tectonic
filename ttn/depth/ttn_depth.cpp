@@ -27,7 +27,7 @@ Ttn::depth::Ttn_Depth::Ttn_Depth(VkDevice vkDevice, Ttn::devices::Ttn_Physical_D
     throw std::runtime_error("could not create depth image view");
   }
 
-  this->ttnCommand.transitionImageLayout(this->depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+  this->ttnCommand.transitionImageLayout(this->depthImage, depthFormat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, 1);
 }
 
 Ttn::depth::Ttn_Depth::~Ttn_Depth() {
