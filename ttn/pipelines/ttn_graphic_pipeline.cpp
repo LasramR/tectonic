@@ -2,7 +2,7 @@
 
 #include <format>
 
-Ttn::pipelines::Ttn_Graphic_Pipeline::Ttn_Graphic_Pipeline(VkDevice vkDevice, Ttn::Logger& logger, Ttn::swapchain::Ttn_SwapChain& ttnSwapChain, Ttn::pipelines::Ttn_Renderpass& ttnRenderpass, Ttn::vertex::Ttn_Vertex_Buffer& ttnVertexBuffer, VkImageView textureView, VkSampler sampler, size_t maxFramesInFlight) :
+Ttn::pipelines::Ttn_Graphic_Pipeline::Ttn_Graphic_Pipeline(VkDevice vkDevice, Ttn::Logger& logger, Ttn::swapchain::Ttn_SwapChain& ttnSwapChain, Ttn::pipelines::Ttn_Renderpass& ttnRenderpass, Ttn::vertex::Ttn_Vertex_Buffer& ttnVertexBuffer, VkImageView textureView, VkSampler sampler, size_t maxFramesInFlight, Ttn::vertex::TtnVertex& ttnVertex) :
   vkDevice{vkDevice},
   logger{logger},
   ttnSwapChain{ttnSwapChain},
@@ -28,7 +28,6 @@ Ttn::pipelines::Ttn_Graphic_Pipeline::Ttn_Graphic_Pipeline(VkDevice vkDevice, Tt
 
   VkPipelineShaderStageCreateInfo shaderStages[] = { vertShaderStageCreateInfo, fragShaderStageCreateInfo};
   
-  auto ttnVertex = Ttn::vertex::TtnVertex::Default();
   auto bindingDescription = ttnVertex.getBindingDescription();
   auto attributeDescriptions = ttnVertex.getAttributeDescriptions();
 

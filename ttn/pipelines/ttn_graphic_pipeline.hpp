@@ -31,7 +31,7 @@ namespace Ttn {
         VkPipeline pipeline;
 
       public:
-        Ttn_Graphic_Pipeline(VkDevice, Ttn::Logger&, Ttn::swapchain::Ttn_SwapChain&, Ttn::pipelines::Ttn_Renderpass&, Ttn::vertex::Ttn_Vertex_Buffer&, VkImageView, VkSampler, size_t);
+        Ttn_Graphic_Pipeline(VkDevice, Ttn::Logger&, Ttn::swapchain::Ttn_SwapChain&, Ttn::pipelines::Ttn_Renderpass&, Ttn::vertex::Ttn_Vertex_Buffer&, VkImageView, VkSampler, size_t, Ttn::vertex::TtnVertex&);
         ~Ttn_Graphic_Pipeline();
 
         std::vector<VkDescriptorSet> descriptorSets;

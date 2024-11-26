@@ -90,7 +90,7 @@ void Ttn::commands::Ttn_Command::recordCommandBuffer(uint32_t commandBufferIdx, 
   VkBuffer vertexBuffers[] = { this->ttnVertexBuffer.vertexBuffer };
   VkDeviceSize offsets[] = {0};
   vkCmdBindVertexBuffers(this->commandBuffers[commandBufferIdx], 0, 1, vertexBuffers, offsets);
-  vkCmdBindIndexBuffer(this->commandBuffers[commandBufferIdx], this->ttnVertexBuffer.indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+  vkCmdBindIndexBuffer(this->commandBuffers[commandBufferIdx], this->ttnVertexBuffer.indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
   VkViewport viewport {};
   viewport.x = 0.0f;
@@ -106,7 +106,7 @@ void Ttn::commands::Ttn_Command::recordCommandBuffer(uint32_t commandBufferIdx, 
   scissor.extent = this->ttnSwapChain.getSwapChainExtent();
   vkCmdSetScissor(this->commandBuffers[commandBufferIdx], 0, 1, &scissor);
   vkCmdBindDescriptorSets(this->commandBuffers[commandBufferIdx], VK_PIPELINE_BIND_POINT_GRAPHICS, this->ttnGraphicPipeline->pipelineLayout, 0, 1, &this->ttnGraphicPipeline->descriptorSets[commandBufferIdx], 0, nullptr);
-  vkCmdDrawIndexed(this->commandBuffers[commandBufferIdx], static_cast<uint32_t>(this->ttnVertexBuffer.ttnVertex.indices.size()), 1, 0, 0, 0);
+  vkCmdDrawIndexed(this->commandBuffers[commandBufferIdx], this->ttnVertexBuffer.indicesCount, 1, 0, 0, 0);
 
   vkCmdEndRenderPass(this->commandBuffers[commandBufferIdx]);
 

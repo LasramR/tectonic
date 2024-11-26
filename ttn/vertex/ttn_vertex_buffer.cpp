@@ -8,17 +8,17 @@
 
 #include <iostream>
 
-Ttn::vertex::Ttn_Vertex_Buffer::Ttn_Vertex_Buffer(VkPhysicalDevice vkPhysicalDevice, VkDevice vkDevice, Ttn::vertex::TtnVertex ttnVertex, size_t maxFrameInflight) :
+Ttn::vertex::Ttn_Vertex_Buffer::Ttn_Vertex_Buffer(VkPhysicalDevice vkPhysicalDevice, VkDevice vkDevice, Ttn::vertex::TtnVertex& ttnVertex, size_t maxFrameInflight) :
   vkDevice{vkDevice},
   vkPhysicalDevice{vkPhysicalDevice},
-  ttnVertex{ttnVertex},
   vertexBuffer{VK_NULL_HANDLE},
-  maxFrameInFlight{maxFrameInflight}
+  maxFrameInFlight{maxFrameInflight},
+  indicesCount{static_cast<uint32_t>(ttnVertex.indices.size())}
 {
-  this->indexBufferSize = sizeof(this->ttnVertex.indices[0]) * this->ttnVertex.indices.size();
+  this->indexBufferSize = sizeof(ttnVertex.indices[0]) * ttnVertex.indices.size();
   this->createBuffer(this->indexBufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, this->indexBuffer, this->indexBufferMemory);
 
-  this->bufferSize = sizeof(this->ttnVertex.vertices[0]) * this->ttnVertex.vertices.size();
+  this->bufferSize = sizeof(ttnVertex.vertices[0]) * ttnVertex.vertices.size();
   this->createBuffer(this->bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, this->vertexBuffer, this->vertexBufferMemory);
 
   this->createUniformBuffers(this->uniformBuffers, this->uniformBuffersMemory, this->uniformBufferMapped);

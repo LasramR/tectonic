@@ -32,10 +32,9 @@ namespace Ttn {
         std::vector<VkBuffer> uniformBuffers;
         std::vector<VkDeviceMemory> uniformBuffersMemory;
         std::vector<void*> uniformBufferMapped;
+        const uint32_t indicesCount;
 
-        Ttn::vertex::TtnVertex ttnVertex;
-
-        Ttn_Vertex_Buffer(VkPhysicalDevice, VkDevice, Ttn::vertex::TtnVertex, size_t);
+        Ttn_Vertex_Buffer(VkPhysicalDevice, VkDevice, Ttn::vertex::TtnVertex&, size_t);
         ~Ttn_Vertex_Buffer();
 
         uint32_t findMemoryType(VkPhysicalDeviceMemoryProperties, uint32_t, VkMemoryPropertyFlags);

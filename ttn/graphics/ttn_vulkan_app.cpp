@@ -15,11 +15,13 @@ const std::vector<const char*> Ttn::VulkanApp::vkValidationLayers = {
   "VK_LAYER_KHRONOS_validation"
 };
 
-Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProperties, const int MAX_FRAMES_IN_FLIGHT, Ttn::Logger& logger) : 
+Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProperties, const int MAX_FRAMES_IN_FLIGHT, const char* MODEL_PATH, const char* TEXTURE_PATH, Ttn::Logger& logger) : 
   vkApplicationInfo{}, 
   vkInstanceCreateInfo{}, 
   vkInstance{VK_NULL_HANDLE},
   MAX_FRAMES_IN_FLIGHT{MAX_FRAMES_IN_FLIGHT},
+  MODEL_PATH {MODEL_PATH},
+  TEXTURE_PATH {TEXTURE_PATH},
   currentFrame{0},
   logger{logger}
 {
@@ -129,8 +131,11 @@ Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProp
   this->logger.Info("Creating render pass");
   this->ttnRenderpass = new Ttn::pipelines::Ttn_Renderpass(this->ttnLogicalDevice->getDevice(), this->ttnSwapChain->getSwapChainFormat(), *this->ttnPhysicalDevice);
 
+  this->logger.Info(std::format("Loading model {}", this->MODEL_PATH));
+  auto model = Ttn::vertex::TtnVertex(this->MODEL_PATH);
+
   this->logger.Info("Creating vertex buffer");
-  this->ttnVertexBuffer = new Ttn::vertex::Ttn_Vertex_Buffer(this->ttnPhysicalDevice->GetVkPhysicalDevice(), this->ttnLogicalDevice->getDevice(), Ttn::vertex::TtnVertex::Default(), this->MAX_FRAMES_IN_FLIGHT);
+  this->ttnVertexBuffer = new Ttn::vertex::Ttn_Vertex_Buffer(this->ttnPhysicalDevice->GetVkPhysicalDevice(), this->ttnLogicalDevice->getDevice(), model, this->MAX_FRAMES_IN_FLIGHT);
 
   this->logger.Info("Creating command pool and command buffer");
   this->ttnCommand = new Ttn::commands::Ttn_Command(*this->ttnLogicalDevice, *this->ttnPhysicalDevice, *this->ttnRenderpass, *this->ttnSwapChain, this->MAX_FRAMES_IN_FLIGHT, *this->ttnVertexBuffer);
@@ -141,11 +146,11 @@ Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProp
   this->logger.Info("Creating frame buffers");
   this->ttnFramebuffer = new Ttn::graphics::Ttn_Framebuffer(this->ttnLogicalDevice->getDevice(), *this->ttnSwapChain, *this->ttnImageView, *this->ttnRenderpass, this->ttnDepth->depthImageView);
 
-  this->logger.Info("Loading textures");
-  this->ttnTexture = new Ttn::textures::Ttn_Texture(this->ttnLogicalDevice->getDevice(), this->ttnPhysicalDevice->GetVkPhysicalDevice(), "textures/texture.jpg", *this->ttnVertexBuffer, *this->ttnCommand);
+  this->logger.Info(std::format("Loading textures {}", this->TEXTURE_PATH));
+  this->ttnTexture = new Ttn::textures::Ttn_Texture(this->ttnLogicalDevice->getDevice(), this->ttnPhysicalDevice->GetVkPhysicalDevice(), this->TEXTURE_PATH, *this->ttnVertexBuffer, *this->ttnCommand);
 
   this->logger.Info("Creating graphic pipeline");
-  this->ttnGraphicPipeline = new Ttn::pipelines::Ttn_Graphic_Pipeline(this->ttnLogicalDevice->getDevice(), this->logger, *this->ttnSwapChain, *this->ttnRenderpass, *this->ttnVertexBuffer, this->ttnTexture->textureImageView, this->ttnTexture->ttnSampler->textureSampler, this->MAX_FRAMES_IN_FLIGHT);
+  this->ttnGraphicPipeline = new Ttn::pipelines::Ttn_Graphic_Pipeline(this->ttnLogicalDevice->getDevice(), this->logger, *this->ttnSwapChain, *this->ttnRenderpass, *this->ttnVertexBuffer, this->ttnTexture->textureImageView, this->ttnTexture->ttnSampler->textureSampler, this->MAX_FRAMES_IN_FLIGHT, model);
 
   this->logger.Info("Binding graphic pipeline to command buffer");
   this->ttnCommand->bindGraphicPipeline(this->ttnGraphicPipeline);
@@ -159,27 +164,21 @@ Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProp
   for (int i = 0; i < this->MAX_FRAMES_IN_FLIGHT; i++) {
     this->ttnSyncObjects[i] = new Ttn::sync::Ttn_Sync_Objects(this->ttnLogicalDevice->getDevice());
   }
-}
 
-Ttn::VulkanApp::~VulkanApp() {
-  vkDestroyInstance(this->vkInstance, nullptr);
-}
-
-void Ttn::VulkanApp::initialize() {
   this->logger.Info("Copying staging buffer to vertex buffer");
   auto stagingVertex = this->ttnVertexBuffer->createStagingBuffer(
-    this->ttnVertexBuffer->ttnVertex.vertices.data(),
+    model.vertices.data(),
     this->ttnVertexBuffer->bufferSize
   );
   this->ttnCommand->copyBuffer(stagingVertex->vkBuffer, this->ttnVertexBuffer->vertexBuffer, this->ttnVertexBuffer->bufferSize);
   
+  this->logger.Info("Copying staging buffer to index buffer");
   auto stagingIndex = this->ttnVertexBuffer->createStagingBuffer(
-    this->ttnVertexBuffer->ttnVertex.indices.data(),
+    model.indices.data(),
     this->ttnVertexBuffer->indexBufferSize
   );
   this->ttnCommand->copyBuffer(stagingIndex->vkBuffer, this->ttnVertexBuffer->indexBuffer, this->ttnVertexBuffer->indexBufferSize);
 
-  
   vkDestroyBuffer(this->ttnLogicalDevice->getDevice(), stagingVertex->vkBuffer, nullptr);
   vkFreeMemory(this->ttnLogicalDevice->getDevice(), stagingVertex->vkDeviceMemory, nullptr);
   free(stagingVertex);
@@ -188,6 +187,12 @@ void Ttn::VulkanApp::initialize() {
   vkFreeMemory(this->ttnLogicalDevice->getDevice(), stagingIndex->vkDeviceMemory, nullptr);
   free(stagingIndex);
 }
+
+Ttn::VulkanApp::~VulkanApp() {
+  vkDestroyInstance(this->vkInstance, nullptr);
+}
+
+void Ttn::VulkanApp::initialize() {}
 
 void Ttn::VulkanApp::cleanUp() {
   for (const auto& syncObject : this->ttnSyncObjects) {

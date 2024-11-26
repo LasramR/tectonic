@@ -86,8 +86,11 @@ namespace Ttn {
     Ttn::textures::Ttn_Texture* ttnTexture;
     Ttn::depth::Ttn_Depth* ttnDepth;
     
+    const char* MODEL_PATH;
+    const char* TEXTURE_PATH;
+
     public:
-      VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProperties, const int MAX_FRAMES_IN_FLIGHT, Ttn::Logger& logger);
+      VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProperties, const int MAX_FRAMES_IN_FLIGHT, const char*, const char*, Ttn::Logger& logger);
       ~VulkanApp();
       void initialize();
       void run();
