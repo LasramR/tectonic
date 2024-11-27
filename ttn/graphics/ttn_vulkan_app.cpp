@@ -246,22 +246,31 @@ void Ttn::VulkanApp::run() {
   while(!this->window->ShouldClose()) {
       glfwPollEvents();
       auto input = this->keyboardInputListener->consumeCurrentKeyboardInput();
-      if (input.has_value() && input.value().isPressed) {
-        auto key = input.value().key;
+      if (input.has_value()) {
+        auto keyEvent = input.value();
+        auto key = keyEvent.key;
 
-        if (key == GLFW_KEY_ESCAPE || key == GLFW_KEY_A) {
-          glfwSetWindowShouldClose(this->window->getWindow(), GLFW_TRUE);
-        }
+        if (keyEvent.isPressed) {
 
-        if (key == GLFW_KEY_SPACE) {
-          this->rotateModelAnimation->toggleAnimation();
-        }
+          if (!keyEvent.isRepeted) {
+            if (key == GLFW_KEY_ESCAPE || key == GLFW_KEY_A) {
+              glfwSetWindowShouldClose(this->window->getWindow(), GLFW_TRUE);
+            } else if (key == GLFW_KEY_R) {
+              this->rotateModelAnimation->resetAnimation();
+            } else if (key == GLFW_KEY_SPACE) {
+              this->rotateModelAnimation->toggleAnimation();
+            } else if (key == GLFW_KEY_F11) {
+              this->window->toggleFullscreen();
+            }
+          }
 
-        if (key == GLFW_KEY_F11) {
-          this->window->toggleFullscreen();
+          if (key == GLFW_KEY_LEFT) {
+            this->rotateModelAnimation->decreaseAcceleration();
+          } else if (key == GLFW_KEY_RIGHT) {
+            this->rotateModelAnimation->increaseAcceleration();
+          }
         }
       }
-
       this->drawFrame();
   }
   vkDeviceWaitIdle(this->ttnLogicalDevice->getDevice());

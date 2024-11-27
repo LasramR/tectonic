@@ -15,7 +15,8 @@ void Ttn::input::KeyboardInputListener::KeyboardInputListener::keyboardEventCall
   auto keyboardInputListener = reinterpret_cast<Ttn::shared::GlfwUserPointerRegistry*>(glfwGetWindowUserPointer(window));
   Ttn::input::KeyboardInput input {};
   input.key = key;
-  input.isPressed = action == GLFW_PRESS;
+  input.isPressed = action == GLFW_PRESS || action == GLFW_REPEAT;
+  input.isRepeted = action == GLFW_REPEAT;
   keyboardInputListener->keyboardInputListener->currentKeyboardInput = input; // lol I can access private field here ?
 }
 

@@ -10,6 +10,7 @@ namespace Ttn {
     typedef struct {
       int key;
       bool isPressed;
+      bool isRepeted;
     } KeyboardInput;
 
     class KeyboardInputListener {

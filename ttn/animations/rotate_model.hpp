@@ -25,6 +25,7 @@ namespace Ttn {
         std::chrono::high_resolution_clock::time_point waitingStartingTime;
 
         bool isPlaying;
+        float acceleration;
 
         Ttn::vertex::Ttn_Vertex_Buffer& ttnVertexBuffer;
 
@@ -32,7 +33,10 @@ namespace Ttn {
         RotateModel(Ttn::vertex::Ttn_Vertex_Buffer&);
         ~RotateModel();
 
+        void resetAnimation();
         void start();
+        void decreaseAcceleration();
+        void increaseAcceleration();
         void toggleAnimation();
         void updateUniformBuffer(VkExtent2D, uint32_t);
     };
