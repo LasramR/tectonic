@@ -22,6 +22,7 @@
 #include <ttn/msaa/ttn_msaa.hpp>
 #include <ttn/input/keyboard_input.hpp>
 #include <ttn/shared/glfw_userpointer_registry.hpp>
+#include <ttn/camera/camera.hpp>
 #include <ttn/animations/rotate_model.hpp>
 
 #include <string>
@@ -91,6 +92,7 @@ namespace Ttn {
     Ttn::shared::GlfwUserPointerRegistry* glfwUserPointerRegistry;
     Ttn::input::KeyboardInputListener* keyboardInputListener;
 
+    Ttn::camera::Camera* camera;
     Ttn::animations::RotateModel* rotateModelAnimation;
 
 

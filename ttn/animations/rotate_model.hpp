@@ -4,6 +4,7 @@
 
 #include <ttn/vertex/ttn_vertex_buffer.hpp>
 #include <ttn/pipelines/ttn_uniform_object_buffer.hpp>
+#include <ttn/camera/camera.hpp>
 
 #include <vulkan/vulkan.h>
 
@@ -28,9 +29,10 @@ namespace Ttn {
         float acceleration;
 
         Ttn::vertex::Ttn_Vertex_Buffer& ttnVertexBuffer;
+        Ttn::camera::Camera& camera;
 
       public:
-        RotateModel(Ttn::vertex::Ttn_Vertex_Buffer&);
+        RotateModel(Ttn::vertex::Ttn_Vertex_Buffer&, Ttn::camera::Camera&);
         ~RotateModel();
 
         void resetAnimation();

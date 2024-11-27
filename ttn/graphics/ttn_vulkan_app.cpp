@@ -203,8 +203,13 @@ Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProp
   this->logger.Info("binding keyboard listener to GlfwUserPointerRegistry");
   this->glfwUserPointerRegistry->keyboardInputListener = this->keyboardInputListener;
 
+  this->logger.Info("Creating default camera");
+  this->camera = new Ttn::camera::Camera(
+    this->ttnSwapChain->getSwapChainExtent(),
+    {4.0f, 8.0f, 8.0f}
+  );
   this->logger.Info("Creating rotate model animation");
-  this->rotateModelAnimation = new Ttn::animations::RotateModel(*this->ttnVertexBuffer);
+  this->rotateModelAnimation = new Ttn::animations::RotateModel(*this->ttnVertexBuffer, *this->camera);
 }
 
 Ttn::VulkanApp::~VulkanApp() {
@@ -370,4 +375,5 @@ void Ttn::VulkanApp::recreateSwapChain() {
   this->ttnCommand->bindGraphicPipeline(this->ttnGraphicPipeline);
   this->ttnCommand->bindFramebuffer(this->ttnFramebuffer);
   this->ttnCommand->bindRenderpass(this->ttnRenderpass);
+  this->camera->updateProjection(this->ttnSwapChain->getSwapChainExtent());
 }
