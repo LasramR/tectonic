@@ -1,5 +1,6 @@
 #pragma once
 
+#include <GLFW/glfw3.h>
 #include <vulkan/vulkan.h>
 
 #define GLM_FORCE_RADIANS
@@ -10,12 +11,38 @@ namespace Ttn {
 
   namespace camera {
 
+    enum CameraMode {
+      CAMERA_DRAG = 0,
+      CAMERA_CURSOR_CENTER = 1
+    };
+
+    enum CameraBehaviour {
+      CAMERA_FOLLOW_POINTS_TO = 0,
+      CAMERA_FOLLOW_POINTS_TO_INVERTED = 1,
+    };
+    
+    typedef struct {
+      CameraBehaviour behaviour;
+      CameraMode mode;
+      float sensitivity;
+    } CameraOpts;
+
+    CameraOpts DefaultCameraOpts();
+
     class Camera {
 
       private:
+        GLFWwindow* window;
+        CameraOpts options;
+
+        glm::vec3 initialWorldPosition;
+        glm::vec3 initialPointsTo;
+        glm::vec2 initialViewAngle;
+        
         VkExtent2D clipArea;
         glm::vec3 worldPosition;
-        glm::vec3 viewAngle;
+        glm::vec2 viewAngle;
+        glm::vec3 pointsTo;
         glm::vec3 upAngle;
         glm::mat4 viewMatrix;
         glm::mat4 projMatrix;
@@ -24,14 +51,18 @@ namespace Ttn {
         void computeProjectionMatrix();
 
       public:
-        Camera(VkExtent2D, glm::vec3, glm::vec3);
-        Camera(VkExtent2D, glm::vec3);
-        Camera(VkExtent2D);
+        Camera(GLFWwindow*, VkExtent2D, glm::vec3, glm::vec3, CameraOpts);
+        Camera(GLFWwindow*, VkExtent2D, glm::vec3, CameraOpts);
+        Camera(GLFWwindow*, VkExtent2D, CameraOpts);
         ~Camera();
 
+        void moveWorldPosition(glm::vec3);
+        void moveViewAngle(glm::vec2);
         const glm::mat4& getViewSpace();
         void updateProjection(VkExtent2D);
         const glm::mat4& getProjection();
+        void resetCamera();
+        bool requireClick();
     };
   }
 }

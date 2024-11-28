@@ -24,6 +24,7 @@
 #include <ttn/shared/glfw_userpointer_registry.hpp>
 #include <ttn/camera/camera.hpp>
 #include <ttn/animations/rotate_model.hpp>
+#include <ttn/input/mouse_state.hpp>
 
 #include <string>
 #include <vector>
@@ -94,6 +95,8 @@ namespace Ttn {
 
     Ttn::camera::Camera* camera;
     Ttn::animations::RotateModel* rotateModelAnimation;
+
+    Ttn::input::MouseStateListener* mouseStateListener;
 
 
     public:

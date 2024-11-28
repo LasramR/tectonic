@@ -203,10 +203,17 @@ Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProp
   this->logger.Info("binding keyboard listener to GlfwUserPointerRegistry");
   this->glfwUserPointerRegistry->keyboardInputListener = this->keyboardInputListener;
 
+  this->logger.Info("Creating mouse listener");
+  this->mouseStateListener = new Ttn::input::MouseStateListener(this->window->getWindow());
+  this->logger.Info("binding mouse listener to GlfwUserPointerRegistry");
+  this->glfwUserPointerRegistry->mouseStateListener = this->mouseStateListener;
+
   this->logger.Info("Creating default camera");
   this->camera = new Ttn::camera::Camera(
+    this->window->getWindow(),
     this->ttnSwapChain->getSwapChainExtent(),
-    {4.0f, 8.0f, 8.0f}
+    {4.0f, 4.0f, 4.0f},
+    Ttn::camera::DefaultCameraOpts()
   );
   this->logger.Info("Creating rotate model animation");
   this->rotateModelAnimation = new Ttn::animations::RotateModel(*this->ttnVertexBuffer, *this->camera);
@@ -220,6 +227,7 @@ void Ttn::VulkanApp::initialize() {}
 
 void Ttn::VulkanApp::cleanUp() {
   delete this->rotateModelAnimation;
+  delete this->mouseStateListener;
   delete this->keyboardInputListener;
   for (const auto& syncObject : this->ttnSyncObjects) {
     delete syncObject;
@@ -248,11 +256,18 @@ void Ttn::VulkanApp::cleanUp() {
 
 void Ttn::VulkanApp::run() {
   this->rotateModelAnimation->start();
+  bool firstFrame = true;
   while(!this->window->ShouldClose()) {
       glfwPollEvents();
-      auto input = this->keyboardInputListener->consumeCurrentKeyboardInput();
-      if (input.has_value()) {
-        auto keyEvent = input.value();
+      
+      if (firstFrame) {
+        firstFrame = false;
+        this->mouseStateListener->ignoreMouseMove();
+      }
+
+      auto keyboardInput = this->keyboardInputListener->consumeCurrentKeyboardInput();
+      if (keyboardInput.has_value()) {
+        auto keyEvent = keyboardInput.value();
         auto key = keyEvent.key;
 
         if (keyEvent.isPressed) {
@@ -262,10 +277,12 @@ void Ttn::VulkanApp::run() {
               glfwSetWindowShouldClose(this->window->getWindow(), GLFW_TRUE);
             } else if (key == GLFW_KEY_R) {
               this->rotateModelAnimation->resetAnimation();
+              this->camera->resetCamera();
             } else if (key == GLFW_KEY_SPACE) {
               this->rotateModelAnimation->toggleAnimation();
             } else if (key == GLFW_KEY_F11) {
               this->window->toggleFullscreen();
+              // DISABLE CAMERA HERE
             }
           }
 
@@ -276,6 +293,11 @@ void Ttn::VulkanApp::run() {
           }
         }
       }
+
+      auto mouseInput = this->mouseStateListener->consumeMouseState();
+      if ((mouseInput.leftBtn.isClicked || !this->camera->requireClick()) && mouseInput.hasMoved()) {
+        this->camera->moveViewAngle(mouseInput.getMoveDelta());
+      }      
       this->drawFrame();
   }
   vkDeviceWaitIdle(this->ttnLogicalDevice->getDevice());

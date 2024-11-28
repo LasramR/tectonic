@@ -2,7 +2,8 @@
 
 Ttn::shared::GlfwUserPointerRegistry::GlfwUserPointerRegistry() : 
   ttnWindow {nullptr},
-  keyboardInputListener {nullptr}
+  keyboardInputListener {nullptr},
+  mouseStateListener {nullptr}
 {}
 
 Ttn::shared::GlfwUserPointerRegistry::~GlfwUserPointerRegistry() {}
