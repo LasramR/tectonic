@@ -255,7 +255,6 @@ void Ttn::VulkanApp::cleanUp() {
 }
 
 void Ttn::VulkanApp::run() {
-  this->rotateModelAnimation->start();
   bool firstFrame = true;
   while(!this->window->ShouldClose()) {
       glfwPollEvents();
@@ -287,17 +286,17 @@ void Ttn::VulkanApp::run() {
           }
 
           if (key == GLFW_KEY_W) {
-            this->camera->moveWorldPosition({-1.0f, 0.0f, 0.0f});
+            this->camera->moveWorldPositionRelativeToCameraAngle({-1.0f, 0.0f, 0.0f});
           } else if (key == GLFW_KEY_S) {
-            this->camera->moveWorldPosition({1.0f, 0.0f, 0.0f});
+            this->camera->moveWorldPositionRelativeToCameraAngle({1.0f, 0.0f, 0.0f});
           } else if (key == GLFW_KEY_A) {
-            this->camera->moveWorldPosition({0.0f, 1.0f, 0.0f});
+            this->camera->moveWorldHorizontalPositionRelativeToCameraAngle({0.0f, 1.0f, 0.0f});
           } else if (key == GLFW_KEY_D) {
-            this->camera->moveWorldPosition({0.0f, -1.0f, 0.0f});
+            this->camera->moveWorldHorizontalPositionRelativeToCameraAngle({0.0f, -1.0f, 0.0f});
           } else if (key == GLFW_KEY_LEFT_SHIFT) {
-            this->camera->moveWorldPosition({0.0f, 0.0f, -1.0f});
+            this->camera->moveAbsoluteWorldPosition({0.0f, 0.0f, -1.0f});
           } else if (key == GLFW_KEY_SPACE) {
-            this->camera->moveWorldPosition({0.0f, 0.0f, 1.0f});
+            this->camera->moveAbsoluteWorldPosition({0.0f, 0.0f, 1.0f});
           } else if (key == GLFW_KEY_LEFT) {
             this->rotateModelAnimation->decreaseAcceleration();
           } else if (key == GLFW_KEY_RIGHT) {

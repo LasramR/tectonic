@@ -57,7 +57,8 @@ namespace Ttn {
         Camera(GLFWwindow*, VkExtent2D, CameraOpts);
         ~Camera();
 
-        void moveWorldPosition(glm::vec3);
+        void moveAbsoluteWorldPosition(glm::vec3);
+        void moveWorldHorizontalPositionRelativeToCameraAngle(glm::vec3);
         void moveWorldPositionRelativeToCameraAngle(glm::vec3);
         void moveViewAngle(glm::vec2);
         const glm::mat4& getViewSpace();
