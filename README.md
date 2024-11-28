@@ -12,6 +12,10 @@ Thus the project includes concepts described until the [Multisampling](https://v
 
 Given that the code can successfully render a 3d object and applying a texture to it, we extend the tutorial with the following features :
 
+### Interactive camera
+
+By default, your mouse cursor is hidden and hidden in the displayed window. Moving your cursor will change the camera angle.
+
 ### Keyboard inputs
 
 | key(s) | usage |
