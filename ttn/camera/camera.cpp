@@ -6,7 +6,7 @@ Ttn::camera::CameraOpts Ttn::camera::DefaultCameraOpts() {
   return {
     behaviour: Ttn::camera::CameraBehaviour::CAMERA_FOLLOW_POINTS_TO,
     mode: Ttn::camera::CameraMode::CAMERA_CURSOR_CENTER,
-    sensitivity: 1.0f
+    sensitivity: 0.2f
   };
 }
 

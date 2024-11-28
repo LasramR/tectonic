@@ -204,7 +204,7 @@ Ttn::VulkanApp::VulkanApp(std::string name, Ttn::Ttn_WindowProperties windowProp
   this->glfwUserPointerRegistry->keyboardInputListener = this->keyboardInputListener;
 
   this->logger.Info("Creating mouse listener");
-  this->mouseStateListener = new Ttn::input::MouseStateListener(this->window->getWindow());
+  this->mouseStateListener = new Ttn::input::MouseStateListener(this->window->getWindow(), Ttn::input::MouseConstraint::ALWAYS_CENTERED | Ttn::input::MouseConstraint::HIDDEN_CURSOR);
   this->logger.Info("binding mouse listener to GlfwUserPointerRegistry");
   this->glfwUserPointerRegistry->mouseStateListener = this->mouseStateListener;
 

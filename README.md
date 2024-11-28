@@ -18,5 +18,7 @@ Given that the code can successfully render a 3d object and applying a texture t
 | --- | --- |
 | `Escape`, `Q` | Close the app |
 | `Space` | Toggle model rotation |
-| `R` | Reset model rotation |
+| `R` | Reset model rotation and camera position |
 | `F11` | Toggle fullscreen |
+| `Right arrow` | Increase modal rotation speed |
+| `Left arrow` | Decrease modal rotation speed |

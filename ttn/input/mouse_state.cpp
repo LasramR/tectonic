@@ -11,14 +11,27 @@ glm::vec2 Ttn::input::MouseState::getMoveDelta() {
   return { this->currentMousePos.xpos - this->previousMousePos.xpos, this->currentMousePos.ypos - this->previousMousePos.ypos };
 }
 
+Ttn::input::MouseConstraint Ttn::input::DefaultMouseConstraint() {
+  return Ttn::input::MouseConstraint::NO_CONSTRAINT;
+}
 
-Ttn::input::MouseStateListener::MouseStateListener(GLFWwindow* window) :
+Ttn::input::MouseStateListener::MouseStateListener(GLFWwindow* window, MouseConstraintFlags constraints) :
   window {window},
+  constraints {constraints},
   state {}
 {
   glfwSetMouseButtonCallback(this->window, this->mouseBtnCallback);
   glfwSetCursorPosCallback(this->window, this->mouseMoveCallback);
+  if (this->constraints & Ttn::input::MouseConstraint::ALWAYS_CENTERED) {
+    int windowWidth, windowHeight;
+    glfwGetWindowSize(this->window, &windowWidth, &windowHeight);
+    glfwSetCursorPos(this->window, windowWidth / 2, windowHeight / 2);
+  }
   glfwGetCursorPos(this->window, &this->state.previousMousePos.xpos, &this->state.previousMousePos.ypos);
+
+  if (this->constraints & Ttn::input::MouseConstraint::HIDDEN_CURSOR) {
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  }
 }
 
 Ttn::input::MouseStateListener::~MouseStateListener() {
@@ -56,8 +69,14 @@ void Ttn::input::MouseStateListener::mouseMoveCallback(GLFWwindow* window, doubl
   auto mouseStateListener = registry->mouseStateListener;
 
   mouseStateListener->state.previousMousePos = mouseStateListener->state.currentMousePos; 
-  mouseStateListener->state.currentMousePos = {xpos: xpos, ypos: ypos}; 
+  mouseStateListener->state.currentMousePos = {xpos: xpos, ypos: ypos};
 
+  if (mouseStateListener->constraints & Ttn::input::MouseConstraint::ALWAYS_CENTERED) {
+    int windowWidth, windowHeight; // maybe with swap chain extent we can optimize this part to omit some glfw api calls;
+    glfwGetWindowSize(window, &windowWidth, &windowHeight);
+    mouseStateListener->state.previousMousePos = {static_cast<double>(windowWidth / 2), static_cast<double>(windowHeight / 2)}; 
+    glfwSetCursorPos(window, windowWidth / 2, windowHeight / 2);
+  }
 }
 
 const Ttn::input::MouseState Ttn::input::MouseStateListener::consumeMouseState() {
