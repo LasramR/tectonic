@@ -6,7 +6,8 @@ Ttn::camera::CameraOpts Ttn::camera::DefaultCameraOpts() {
   return {
     behaviour: Ttn::camera::CameraBehaviour::CAMERA_FOLLOW_POINTS_TO,
     mode: Ttn::camera::CameraMode::CAMERA_CURSOR_CENTER,
-    sensitivity: 0.2f
+    sensitivity: 0.2f,
+    moveSpeed: 1.0f
   };
 }
 
@@ -63,9 +64,18 @@ void Ttn::camera::Camera::computeProjectionMatrix() {
 }
 
 
-void Ttn::camera::Camera::moveWorldPosition(glm::vec3 newWorldPosition) {
-  // TODO
+void Ttn::camera::Camera::moveWorldPosition(glm::vec3 moveDelta) {
+  glm::vec3 cameraMove = moveDelta;
+  this->worldPosition += cameraMove;
+  this->pointsTo += cameraMove;
+  this->computeViewMatrix();
 }
+
+void Ttn::camera::Camera::moveWorldPositionRelativeToCameraAngle(glm::vec3) {
+
+}
+
+
 void Ttn::camera::Camera::moveViewAngle(glm::vec2 moveDelta) {
   if (this->options.behaviour == Ttn::camera::CameraBehaviour::CAMERA_FOLLOW_POINTS_TO) {
     moveDelta = -moveDelta;
@@ -74,13 +84,13 @@ void Ttn::camera::Camera::moveViewAngle(glm::vec2 moveDelta) {
   this->viewAngle.x += moveDelta.x * this->options.sensitivity;
   this->viewAngle.y = glm::clamp(this->viewAngle.y + moveDelta.y * this->options.sensitivity, -89.0f, 89.0f);
 
-  glm::vec3 cameraMove {
+  glm::vec3 cameraAngleMove {
     cos(glm::radians(this->viewAngle.y)) * cos(glm::radians(this->viewAngle.x)),
     cos(glm::radians(this->viewAngle.y)) * sin(glm::radians(this->viewAngle.x)),
     sin(glm::radians(this->viewAngle.y))
   };
 
-  this->pointsTo = this->worldPosition + cameraMove;
+  this->pointsTo = this->worldPosition + cameraAngleMove;
 
   this->computeViewMatrix();
 }

@@ -273,12 +273,12 @@ void Ttn::VulkanApp::run() {
         if (keyEvent.isPressed) {
 
           if (!keyEvent.isRepeted) {
-            if (key == GLFW_KEY_ESCAPE || key == GLFW_KEY_A) {
+            if (key == GLFW_KEY_ESCAPE) {
               glfwSetWindowShouldClose(this->window->getWindow(), GLFW_TRUE);
             } else if (key == GLFW_KEY_R) {
               this->rotateModelAnimation->resetAnimation();
               this->camera->resetCamera();
-            } else if (key == GLFW_KEY_SPACE) {
+            } else if (key == GLFW_KEY_F) {
               this->rotateModelAnimation->toggleAnimation();
             } else if (key == GLFW_KEY_F11) {
               this->window->toggleFullscreen();
@@ -286,7 +286,19 @@ void Ttn::VulkanApp::run() {
             }
           }
 
-          if (key == GLFW_KEY_LEFT) {
+          if (key == GLFW_KEY_W) {
+            this->camera->moveWorldPosition({-1.0f, 0.0f, 0.0f});
+          } else if (key == GLFW_KEY_S) {
+            this->camera->moveWorldPosition({1.0f, 0.0f, 0.0f});
+          } else if (key == GLFW_KEY_A) {
+            this->camera->moveWorldPosition({0.0f, 1.0f, 0.0f});
+          } else if (key == GLFW_KEY_D) {
+            this->camera->moveWorldPosition({0.0f, -1.0f, 0.0f});
+          } else if (key == GLFW_KEY_LEFT_SHIFT) {
+            this->camera->moveWorldPosition({0.0f, 0.0f, -1.0f});
+          } else if (key == GLFW_KEY_SPACE) {
+            this->camera->moveWorldPosition({0.0f, 0.0f, 1.0f});
+          } else if (key == GLFW_KEY_LEFT) {
             this->rotateModelAnimation->decreaseAcceleration();
           } else if (key == GLFW_KEY_RIGHT) {
             this->rotateModelAnimation->increaseAcceleration();
